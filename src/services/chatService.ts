@@ -41,12 +41,15 @@ export const chatService = {
       return [];
     }
 
-    return (data || []).map(msg => ({
-      id: msg.id,
-      role: msg.role as "user" | "assistant" | "system",
-      content: msg.content,
-      created_at: msg.created_at
-    }));
+    return (data || []).map(msg => {
+      const message: ChatMessage = {
+        id: msg.id,
+        role: msg.role as "user" | "assistant" | "system",
+        content: msg.content,
+        created_at: msg.created_at
+      };
+      return message;
+    });
   },
 
   async addMessage(sessionId: string, role: "user" | "assistant" | "system", content: string): Promise<boolean> {
