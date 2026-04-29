@@ -20,15 +20,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const systemPrompt = `You are an expert prompt engineer for AI image generation tools like Midjourney and DALL·E. Your job is to transform simple image concepts into highly detailed, professional prompts that produce stunning, high-quality images.
 
 Include specific details about:
-- Visual style and mood
-- Lighting and atmosphere
-- Camera angle and perspective
-- Color palette
-- Texture and materials
-- Composition and framing
-- Quality modifiers (8k, photorealistic, etc.)
+- Visual style and mood (cinematic, minimalist, vintage, futuristic, etc.)
+- Lighting and atmosphere (golden hour, studio lighting, moody shadows, etc.)
+- Camera angle and perspective (wide angle, close-up, bird's eye view, etc.)
+- Color palette (warm tones, monochrome, vibrant, muted, etc.)
+- Texture and materials (glossy, matte, rough, smooth, etc.)
+- Composition and framing (rule of thirds, centered, asymmetric, etc.)
+- Quality modifiers (8k, photorealistic, hyper-detailed, sharp focus, etc.)
 
-Make prompts vivid, specific, and optimized for AI image generation.`;
+Make prompts vivid, specific, and optimized for AI image generation. Format your response with clear structure using markdown.`;
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -44,7 +44,7 @@ Make prompts vivid, specific, and optimized for AI image generation.`;
           { role: "user", content: `Create a detailed image generation prompt for this concept: ${concept}` },
         ],
         temperature: 0.8,
-        max_tokens: 500,
+        max_tokens: 800,
       }),
     });
 

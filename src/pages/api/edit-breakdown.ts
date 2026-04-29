@@ -1,9 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -14,33 +11,49 @@ export default async function handler(
     return res.status(400).json({ error: "Video URL is required" });
   }
 
-  const openaiApiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
 
-  if (!openaiApiKey) {
+  if (!apiKey) {
     return res.status(500).json({ error: "OpenAI API key not configured" });
   }
 
   try {
-    const systemPrompt = `You are an expert video editor and creative director. Analyze Instagram videos and provide detailed editing breakdowns.
+    const systemPrompt = `You are an expert video editor and creative director specializing in analyzing editing techniques and styles. Your breakdowns are detailed, technical, and actionable.
 
-For each video, provide:
-1. **Overall Editing Style**: Describe the overall aesthetic and approach
-2. **Pacing Analysis**: Break down the rhythm, cut frequency, and timing
-3. **Transition Techniques**: Identify specific transitions used
-4. **Effect Recommendations**: Suggest effects the editor can try to achieve similar results
-5. **What Makes It Work**: Summarize the key elements that make this edit effective
+Analyze videos and provide comprehensive editing breakdowns using this structure:
 
-Be specific, technical, and actionable. Format your response with clear headings and bullet points.`;
+## Overall Editing Style
+Describe the overall aesthetic, approach, and creative direction
 
-    const userPrompt = `Analyze this Instagram video and provide a detailed editing breakdown: ${videoUrl}
+## Pacing Analysis
+Break down the rhythm, cut frequency, timing patterns, and flow
 
-Note: Since I cannot directly view the video, please provide a comprehensive template breakdown that editors can use as a framework when analyzing this specific video themselves.`;
+## Transition Techniques
+Identify and describe specific transitions used (cuts, wipes, dissolves, etc.)
+
+## Effect Recommendations
+List specific effects the editor can try to achieve similar results, with technical details
+
+## What Makes It Work
+Summarize the key elements that make this edit effective
+
+Use markdown formatting: headings (##), bullet points, numbered lists, and **bold** for emphasis.`;
+
+    const userPrompt = `Analyze this YouTube video and provide a detailed editing breakdown: ${videoUrl}
+
+Since you cannot directly view the video, provide a comprehensive framework breakdown that includes:
+1. Common editing patterns for this type of content
+2. Industry-standard techniques likely used
+3. Specific recommendations for achieving similar results
+4. Technical details an editor can apply
+
+Make it actionable and specific.`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${openaiApiKey}`,
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: "gpt-4o",
@@ -49,6 +62,7 @@ Note: Since I cannot directly view the video, please provide a comprehensive tem
           { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
@@ -60,10 +74,10 @@ Note: Since I cannot directly view the video, please provide a comprehensive tem
 
     const breakdown = data.choices[0]?.message?.content || "No breakdown generated";
 
-    res.status(200).json({ breakdown });
+    return res.status(200).json({ breakdown });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error analyzing video:", errorMessage);
-    res.status(500).json({ error: errorMessage });
+    console.error("Edit Breakdown error:", errorMessage);
+    return res.status(500).json({ error: errorMessage });
   }
 }

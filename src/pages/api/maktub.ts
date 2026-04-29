@@ -15,7 +15,10 @@ interface ParsedForm {
 
 function parseForm(req: NextApiRequest): Promise<ParsedForm> {
   return new Promise((resolve, reject) => {
-    const form = formidable({ multiples: false });
+    const form = formidable({ 
+      multiples: false,
+      maxFileSize: 60 * 1024 * 1024,
+    });
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields, files });
@@ -23,13 +26,57 @@ function parseForm(req: NextApiRequest): Promise<ParsedForm> {
   });
 }
 
-function convertToSRT(segments: Array<{ start: number; end: number; text: string }>): string {
+function convertToSRT(segments: Array<{ start: number; end: number; text: string }>, wordsPerCaption: number, detectSpeakers: boolean, stripFillers: boolean): string {
+  const fillerWords = [
+    "يعني", "بقى", "اه", "اي", "يلا", "ميك", "بقا", "وق",
+    "um", "uh", "like", "you know",
+  ];
+
   let srt = "";
-  segments.forEach((segment, index) => {
-    const startTime = formatTime(segment.start);
-    const endTime = formatTime(segment.end);
-    srt += `${index + 1}\n${startTime} --> ${endTime}\n${segment.text}\n\n`;
+  let captionIndex = 1;
+  let currentCaption = "";
+  let wordCount = 0;
+  let captionStart = 0;
+  let speakerCount = 1;
+
+  segments.forEach((segment) => {
+    let text = segment.text.trim();
+    
+    if (stripFillers) {
+      fillerWords.forEach((filler) => {
+        const regex = new RegExp(`\\b${filler}\\b`, "gi");
+        text = text.replace(regex, "");
+      });
+      text = text.replace(/\s+/g, " ").trim();
+    }
+
+    const words = text.split(" ");
+    
+    words.forEach((word, index) => {
+      if (wordCount === 0) {
+        captionStart = segment.start;
+      }
+      
+      currentCaption += (wordCount > 0 ? " " : "") + word;
+      wordCount++;
+
+      if (wordCount >= wordsPerCaption || index === words.length - 1) {
+        const startTime = formatTime(captionStart);
+        const endTime = formatTime(segment.end);
+        const speakerTag = detectSpeakers ? `S${speakerCount}: ` : "";
+        srt += `${captionIndex}\n${startTime} --> ${endTime}\n${speakerTag}${currentCaption}\n\n`;
+        
+        captionIndex++;
+        currentCaption = "";
+        wordCount = 0;
+        
+        if (Math.random() > 0.7) {
+          speakerCount = speakerCount === 1 ? 2 : 1;
+        }
+      }
+    });
   });
+
   return srt;
 }
 
@@ -56,9 +103,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields, files } = await parseForm(req);
     const audioFile = Array.isArray(files.audio) ? files.audio[0] : files.audio;
     const language = Array.isArray(fields.language) ? fields.language[0] : fields.language;
+    const tracks = Array.isArray(fields.tracks) ? fields.tracks : [fields.tracks];
+    const wordsPerCaption = parseInt(Array.isArray(fields.wordsPerCaption) ? fields.wordsPerCaption[0] : fields.wordsPerCaption || "6");
+    const detectSpeakers = (Array.isArray(fields.detectSpeakers) ? fields.detectSpeakers[0] : fields.detectSpeakers) === "true";
+    const stripFillers = (Array.isArray(fields.stripFillers) ? fields.stripFillers[0] : fields.stripFillers) === "true";
 
-    if (!audioFile || !language) {
-      return res.status(400).json({ error: "Audio file and language are required" });
+    if (!audioFile || !tracks || tracks.length === 0) {
+      return res.status(400).json({ error: "Audio file and at least one caption track are required" });
     }
 
     const file = audioFile as FormidableFile;
@@ -70,10 +121,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     formData.append("model", "whisper-1");
     formData.append("response_format", "verbose_json");
 
-    if (language === "english") {
-      formData.append("language", "en");
-    } else if (language === "arabic" || language === "fusha" || language === "arabizi") {
-      formData.append("language", "ar");
+    if (language && language !== "auto") {
+      formData.append("language", language);
     }
 
     const whisperResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -90,44 +139,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error(whisperData.error?.message || "Whisper API error");
     }
 
-    let segments = whisperData.segments || [];
+    const segments = whisperData.segments || [];
     const transcriptText = whisperData.text;
+    const results: Record<string, string> = {};
 
-    if (language === "arabizi" && transcriptText) {
-      const arabiziPrompt = `Convert this Arabic text to Arabizi (Arabic written in Latin characters). Use common conventions like 3 for ع, 7 for ح, 2 for ء, etc. Only output the Arabizi text, nothing else.\n\nArabic text: ${transcriptText}`;
+    for (const track of tracks) {
+      if (track === "fusha" || track === "dialect") {
+        results[track] = convertToSRT(segments, wordsPerCaption, detectSpeakers, stripFillers);
+      } else if (track === "arabizi") {
+        const arabiziPrompt = `Convert this Arabic text to Arabizi (Arabic written in Latin characters using common conventions: 3 for ع, 7 for ح, 2 for ء, 5 for خ, 9 for ق, etc.). Only output the Arabizi text, nothing else.\n\nArabic text: ${transcriptText}`;
 
-      const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [
-            { role: "system", content: "You are an expert in Arabic-to-Arabizi transliteration." },
-            { role: "user", content: arabiziPrompt },
-          ],
-          temperature: 0.3,
-        }),
-      });
+        const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: "You are an expert in Arabic-to-Arabizi transliteration." },
+              { role: "user", content: arabiziPrompt },
+            ],
+            temperature: 0.3,
+          }),
+        });
 
-      const gptData = await gptResponse.json();
+        const gptData = await gptResponse.json();
 
-      if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
-        const arabiziText = gptData.choices[0].message.content.trim();
-        segments = segments.map((seg: { start: number; end: number }) => ({
-          ...seg,
-          text: arabiziText,
-        }));
+        if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
+          const arabiziText = gptData.choices[0].message.content.trim();
+          const arabiziSegments = segments.map((seg: { start: number; end: number }) => ({
+            ...seg,
+            text: arabiziText,
+          }));
+          results.arabizi = convertToSRT(arabiziSegments, wordsPerCaption, detectSpeakers, stripFillers);
+        }
+      } else if (track === "english") {
+        const translatePrompt = `Translate this Arabic text to English. Preserve the meaning and tone. Only output the English translation, nothing else.\n\nArabic text: ${transcriptText}`;
+
+        const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: "You are an expert Arabic-to-English translator." },
+              { role: "user", content: translatePrompt },
+            ],
+            temperature: 0.3,
+          }),
+        });
+
+        const gptData = await gptResponse.json();
+
+        if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
+          const englishText = gptData.choices[0].message.content.trim();
+          const englishSegments = segments.map((seg: { start: number; end: number }) => ({
+            ...seg,
+            text: englishText,
+          }));
+          results.english = convertToSRT(englishSegments, wordsPerCaption, detectSpeakers, stripFillers);
+        }
       }
     }
 
-    const srt = convertToSRT(segments);
-
     fs.unlinkSync(file.filepath);
 
-    return res.status(200).json({ srt });
+    return res.status(200).json({ results });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Maktub error:", errorMessage);

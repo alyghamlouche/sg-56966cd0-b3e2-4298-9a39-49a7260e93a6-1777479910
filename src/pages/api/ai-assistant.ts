@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const SYSTEM_PROMPT = "You are an expert video editor and creative director working with the AG Edits team. All your answers should be tailored to video editing, storytelling, pacing, style, and visual content creation. Provide practical, actionable advice for video editors.";
+const SYSTEM_PROMPT = "You are an expert video editor and creative director working with the AG Edits team. All answers must be tailored to video editing, storytelling, pacing, style, and visual content creation.";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           { role: "user", content: message },
         ],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 2000,
       }),
     });
 

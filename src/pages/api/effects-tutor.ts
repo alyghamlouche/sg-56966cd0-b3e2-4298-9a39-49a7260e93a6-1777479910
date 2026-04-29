@@ -23,11 +23,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const softwareName = SOFTWARE_NAMES[software] || software;
-  const prompt = `Create a clear, numbered step-by-step tutorial for creating the following effect in ${softwareName}. Tailor the tutorial for a ${difficulty} level user.
+  const systemPrompt = "You are an expert video editor and instructor specializing in Adobe Premiere Pro and After Effects. Your tutorials are clear, detailed, and actionable.";
+  
+  const userPrompt = `Create a clear, numbered step-by-step tutorial for creating the following effect in ${softwareName}. Tailor the tutorial for a ${difficulty} level user.
 
 Effect: ${effect}
 
-Provide detailed, actionable steps. Include specific menu paths, settings, and values where relevant. Make it easy to follow.`;
+Provide detailed, actionable steps. Include specific menu paths, keyboard shortcuts, settings, and values where relevant. Format your response with proper markdown: use headings (##), numbered lists, and **bold** for important terms. Make it easy to follow.`;
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -39,11 +41,11 @@ Provide detailed, actionable steps. Include specific menu paths, settings, and v
       body: JSON.stringify({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: "You are an expert video editor and instructor specializing in Adobe Premiere Pro and After Effects." },
-          { role: "user", content: prompt },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.5,
-        max_tokens: 1500,
+        max_tokens: 2000,
       }),
     });
 
