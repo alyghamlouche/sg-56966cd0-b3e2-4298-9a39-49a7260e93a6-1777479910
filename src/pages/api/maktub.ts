@@ -88,7 +88,6 @@ function formatTime(seconds: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
 }
 
-// Calculate text similarity using Levenshtein distance
 function calculateSimilarity(str1: string, str2: string): number {
   const len1 = str1.length;
   const len2 = str2.length;
@@ -185,12 +184,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     console.log(`Audio duration: ${audioDuration}s, Raw segments: ${segments.length}`);
     
-    // Step 1: Filter out segments that exceed the audio duration
     const durationFilteredSegments = segments.filter((seg: any) => seg.start < audioDuration);
     
     console.log(`After duration filter: ${durationFilteredSegments.length} segments`);
     
-    // Step 2: Deduplicate by text similarity (remove segments >80% similar to previous segments)
     const deduplicatedSegments = [];
     const seenTexts: string[] = [];
     
@@ -199,7 +196,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (currentText.length === 0) continue;
       
-      // Check similarity against all previously seen texts
       let isDuplicate = false;
       
       for (const seenText of seenTexts) {
@@ -247,7 +243,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
           const arabiziText = gptData.choices[0].message.content.trim();
-          const arabiziSegments = segments.map((seg: { start: number; end: number }) => ({
+          const arabiziSegments = deduplicatedSegments.map((seg: { start: number; end: number }) => ({
             ...seg,
             text: arabiziText,
           }));
@@ -276,7 +272,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
           const englishText = gptData.choices[0].message.content.trim();
-          const englishSegments = segments.map((seg: { start: number; end: number }) => ({
+          const englishSegments = deduplicatedSegments.map((seg: { start: number; end: number }) => ({
             ...seg,
             text: englishText,
           }));
