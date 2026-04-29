@@ -7,9 +7,11 @@ export const profileService = {
   async getProfile(userId: string): Promise<Profile | null> {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, email, full_name, is_admin, created_at")
       .eq("id", userId)
       .single();
+
+    console.log("getProfile result:", { data, error, userId });
 
     if (error) {
       console.error("Error fetching profile:", error);
@@ -22,8 +24,10 @@ export const profileService = {
   async getAllProfiles(): Promise<Profile[]> {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, email, full_name, is_admin, created_at")
       .order("created_at", { ascending: false });
+
+    console.log("getAllProfiles result:", { data, error });
 
     if (error) {
       console.error("Error fetching profiles:", error);
