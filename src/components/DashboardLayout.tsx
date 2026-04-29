@@ -33,14 +33,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
+    console.log("Session check:", { session: !!session, userId: session?.user?.id });
+    
     if (!session) {
       router.push("/login");
       return;
     }
 
     const profile = await profileService.getProfile(session.user.id);
-    if (profile?.is_admin) {
+    console.log("Profile fetched in DashboardLayout:", { 
+      profile, 
+      hasProfile: !!profile,
+      isAdmin: profile?.is_admin,
+      email: profile?.email
+    });
+    
+    if (profile?.is_admin === true) {
+      console.log("Setting isAdmin to TRUE");
       setIsAdmin(true);
+    } else {
+      console.log("isAdmin remains FALSE, profile?.is_admin =", profile?.is_admin);
+      setIsAdmin(false);
     }
 
     setLoading(false);
@@ -114,27 +127,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             })}
 
             {/* Admin Section */}
-            {isAdmin && (
-              <>
-                <div className="pt-4 mt-4 border-t border-border">
-                  <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                    Administration
-                  </p>
-                  <Link href="/admin">
-                    <div className={`
-                      flex items-center gap-3 px-3 py-2 rounded-md transition-colors cursor-pointer
-                      ${router.pathname === "/admin"
-                        ? "bg-primary text-primary-foreground" 
-                        : "hover:bg-muted text-foreground"
-                      }
-                    `}>
-                      <Users className="w-5 h-5" />
-                      <span className="font-medium">Team Management</span>
-                    </div>
-                  </Link>
-                </div>
-              </>
-            )}
+            {(() => {
+              console.log("Rendering admin section check:", { isAdmin });
+              return isAdmin && (
+                <>
+                  <div className="pt-4 mt-4 border-t border-border">
+                    <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      Administration
+                    </p>
+                    <Link href="/admin">
+                      <div className={`
+                        flex items-center gap-3 px-3 py-2 rounded-md transition-colors cursor-pointer
+                        ${router.pathname === "/admin"
+                          ? "bg-primary text-primary-foreground" 
+                          : "hover:bg-muted text-foreground"
+                        }
+                      `}>
+                        <Users className="w-5 h-5" />
+                        <span className="font-medium">Team Management</span>
+                      </div>
+                    </Link>
+                  </div>
+                </>
+              );
+            })()}
           </nav>
 
           {/* Footer */}
