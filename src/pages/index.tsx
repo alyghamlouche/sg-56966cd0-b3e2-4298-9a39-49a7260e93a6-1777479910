@@ -42,7 +42,6 @@ const features = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [greeting, setGreeting] = useState("");
   const [stats, setStats] = useState({
     conversations: 0,
     savedItems: 0,
@@ -62,12 +61,6 @@ export default function HomePage() {
       router.push("/login");
       return;
     }
-
-    // Set time-based greeting
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good morning");
-    else if (hour < 18) setGreeting("Good afternoon");
-    else setGreeting("Good evening");
 
     // Fetch team size
     const allProfiles = await profileService.getAllProfiles();
@@ -89,8 +82,8 @@ export default function HomePage() {
       <div className="container py-8 space-y-8">
         {/* Greeting */}
         <div>
-          <h1 className="text-3xl font-semibold">{greeting}</h1>
-          <p className="text-muted-foreground mt-1">Welcome back to AG Edits</p>
+          <h1 className="text-3xl font-semibold">Welcome back to AG Edits</h1>
+          <p className="text-muted-foreground mt-1">Your video editing toolkit</p>
         </div>
 
         {/* Stats */}
@@ -142,16 +135,6 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Recent Activity</h2>
-          <Card className="border-border">
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground text-center py-8">No recent activity</p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </DashboardLayout>
