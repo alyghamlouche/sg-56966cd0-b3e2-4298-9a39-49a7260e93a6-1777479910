@@ -4,8 +4,8 @@ export interface Generation {
   id: string;
   user_id: string;
   feature_name: string;
-  input: Record<string, unknown>;
-  output: Record<string, unknown>;
+  input: any;
+  output: any;
   created_at: string;
 }
 
@@ -13,8 +13,8 @@ export const generationService = {
   async saveGeneration(
     userId: string,
     featureName: string,
-    input: Record<string, unknown>,
-    output: Record<string, unknown>
+    input: any,
+    output: any
   ): Promise<Generation | null> {
     const { data, error } = await supabase
       .from("generations")
@@ -23,7 +23,7 @@ export const generationService = {
         feature_name: featureName,
         input,
         output,
-      })
+      } as any)
       .select()
       .single();
 
@@ -32,7 +32,7 @@ export const generationService = {
       return null;
     }
 
-    return data;
+    return data as Generation;
   },
 
   async getUserGenerations(userId: string): Promise<Generation[]> {
@@ -47,7 +47,7 @@ export const generationService = {
       return [];
     }
 
-    return data || [];
+    return (data as any[]) || [];
   },
 
   async getGenerationCount(userId: string): Promise<number> {

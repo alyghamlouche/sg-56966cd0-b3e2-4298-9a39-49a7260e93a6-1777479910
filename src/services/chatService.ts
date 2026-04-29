@@ -41,7 +41,7 @@ export const chatService = {
       return [];
     }
 
-    return data || [];
+    return (data as ChatMessage[]) || [];
   },
 
   async getConversationCount(userId: string): Promise<number> {
