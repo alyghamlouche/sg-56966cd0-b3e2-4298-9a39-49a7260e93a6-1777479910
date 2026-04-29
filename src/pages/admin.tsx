@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client";
 import { profileService, type Profile } from "@/services/profileService";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,21 +134,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-border/50">
-        <div className="container py-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
-        </div>
-      </header>
-
-      <main className="container py-8 space-y-8">
+    <DashboardLayout>
+      <div className="container py-8 space-y-8">
         <div>
-          <h1 className="text-3xl font-display font-bold">Admin Panel</h1>
+          <h1 className="text-3xl font-display font-bold">Team Management</h1>
           <p className="text-muted-foreground">Manage users and access control</p>
         </div>
 
@@ -289,7 +278,7 @@ export default function AdminPage() {
             </Table>
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

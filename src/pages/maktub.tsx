@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,22 +100,11 @@ export default function MaktubPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-border/50">
-        <div className="container py-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
-        </div>
-      </header>
-
-      <main className="container py-8 max-w-4xl space-y-8">
+    <DashboardLayout>
+      <div className="container py-8 max-w-4xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-display font-bold">Maktub.AI</h1>
-          <p className="text-muted-foreground">Audio transcription and multilingual caption generator</p>
+          <p className="text-muted-foreground">Audio transcription and caption generator</p>
         </div>
 
         <Card>
@@ -195,7 +185,7 @@ export default function MaktubPage() {
             </CardContent>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

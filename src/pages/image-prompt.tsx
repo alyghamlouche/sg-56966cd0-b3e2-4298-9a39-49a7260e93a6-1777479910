@@ -4,6 +4,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -78,22 +79,11 @@ export default function ImagePromptPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-border/50">
-        <div className="container py-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
-        </div>
-      </header>
-
-      <main className="container py-8 max-w-4xl space-y-8">
+    <DashboardLayout>
+      <div className="container py-8 max-w-4xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-display font-bold">Image Prompt Generator</h1>
-          <p className="text-muted-foreground">Generate detailed prompts for Midjourney & DALL·E</p>
+          <p className="text-muted-foreground">Create detailed prompts for AI image tools</p>
         </div>
 
         <Card>
@@ -157,7 +147,7 @@ export default function ImagePromptPage() {
             </CardContent>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

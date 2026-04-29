@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import { chatService, type ChatMessage } from "@/services/chatService";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Send, Loader2 } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
 export default function AIAssistantPage() {
   const router = useRouter();
@@ -107,61 +107,56 @@ export default function AIAssistantPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b border-border/50">
-        <div className="container py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Link>
-            </Button>
-            <h1 className="text-xl font-display font-bold">AI Assistant</h1>
+    <DashboardLayout>
+      <div className="flex flex-col h-screen">
+        <header className="border-b border-border/50 p-4">
+          <div className="container">
+            <h1 className="text-2xl font-display font-bold">AI Assistant</h1>
+            <p className="text-muted-foreground">Your expert video editing co-pilot</p>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="flex-1 container py-6 flex flex-col max-w-4xl">
-        <div className="flex-1 space-y-4 overflow-y-auto mb-4">
-          {messages.length === 0 && (
-            <div className="text-center py-12 space-y-2">
-              <h2 className="text-2xl font-display font-bold">AI Editing Co-Pilot</h2>
-              <p className="text-muted-foreground">Ask me about editing ideas, pacing, style, or creative direction</p>
-            </div>
-          )}
+        <main className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 space-y-4 overflow-y-auto mb-4">
+            {messages.length === 0 && (
+              <div className="text-center py-12 space-y-2">
+                <h2 className="text-2xl font-display font-bold">AI Editing Co-Pilot</h2>
+                <p className="text-muted-foreground">Ask me about editing ideas, pacing, style, or creative direction</p>
+              </div>
+            )}
 
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <Card className={`max-w-[80%] p-4 ${
-                msg.role === "user" 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-card"
-              }`}>
-                <div className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:leading-relaxed prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-code:text-accent prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {msg.content}
-                  </ReactMarkdown>
-                </div>
-              </Card>
-            </div>
-          ))}
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <Card className={`max-w-[80%] p-4 ${
+                  msg.role === "user" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-card"
+                }`}>
+                  <div className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:leading-relaxed prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-code:text-accent prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                </Card>
+              </div>
+            ))}
 
-          {sending && (
-            <div className="flex justify-start">
-              <Card className="p-4 bg-card">
-                <Loader2 className="w-5 h-5 animate-spin" />
-              </Card>
-            </div>
-          )}
+            {sending && (
+              <div className="flex justify-start">
+                <Card className="p-4 bg-card">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                </Card>
+              </div>
+            )}
 
-          <div ref={messagesEndRef} />
-        </div>
+            <div ref={messagesEndRef} />
+          </div>
+        </main>
 
-        <form onSubmit={handleSend} className="flex gap-2">
+        <form onSubmit={handleSend} className="border-t border-border/50 p-4">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -172,7 +167,7 @@ export default function AIAssistantPage() {
             <Send className="w-4 h-4" />
           </Button>
         </form>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
