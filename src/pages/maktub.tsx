@@ -13,6 +13,34 @@ import { Slider } from "@/components/ui/slider";
 import { Loader2, Download, Upload } from "lucide-react";
 
 type CaptionTrack = "fusha" | "dialect" | "arabizi" | "english";
+const calculateSimilarity = (a: string, b: string): number => {
+    const aWords = new Set(a.split(/\s+/));
+    const bWords = new Set(b.split(/\s+/));
+    const intersection = new Set([...aWords].filter(x => bWords.has(x)));
+    const union = new Set([...aWords, ...bWords]);
+    return union.size === 0 ? 0 : intersection.size / union.size;
+};
+
+const deduplicateSRT = (srtContent: string): string => {
+    const blocks = srtContent.trim().split(/\n\n+/).filter(b => b.trim());
+    const seenTexts: string[] = [];
+    const uniqueBlocks: string[] = [];
+    let newIndex = 1;
+    for (const block of blocks) {
+        const lines = block.trim().split('\n');
+        if (lines.length < 2) continue;
+        const textLines = lines.slice(2);
+        const text = textLines.join(' ').trim().toLowerCase();
+        if (!text) continue;
+        const isDuplicate = seenTexts.some(seen => calculateSimilarity(seen, text) > 0.7);
+        if (!isDuplicate) {
+            seenTexts.push(text);
+            uniqueBlocks.push(`${newIndex}\n${lines[1]}\n${textLines.join('\n')}`);
+            newIndex++;
+        }
+    }
+    return uniqueBlocks.join('\n\n');
+};
 
 export default function MaktubPage() {
   const router = useRouter();
@@ -91,7 +119,11 @@ export default function MaktubPage() {
       const data = await response.json();
 
       if (data.results) {
-        setSrtFiles(data.results);
+          const deduped: Record<string, string> = {};
+          for (const [track, content] of Object.entries(data.results)) {
+              deduped[track] = deduplicateSRT(content as string);
+          }
+          setSrtFiles(deduped);
         setStatus("Caption files ready!");
         
         // Save generation and log activity
