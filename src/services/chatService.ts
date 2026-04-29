@@ -41,15 +41,21 @@ export const chatService = {
       return [];
     }
 
-    return (data || []).map(msg => {
-      const message: ChatMessage = {
-        id: msg.id,
-        role: msg.role as "user" | "assistant" | "system",
-        content: msg.content,
-        created_at: msg.created_at
-      };
-      return message;
-    });
+    return data || [];
+  },
+
+  async getConversationCount(userId: string): Promise<number> {
+    const { count, error } = await supabase
+      .from("chat_sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error counting conversations:", error);
+      return 0;
+    }
+
+    return count || 0;
   },
 
   async addMessage(sessionId: string, role: "user" | "assistant" | "system", content: string): Promise<boolean> {
