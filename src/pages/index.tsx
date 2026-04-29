@@ -3,9 +3,12 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client";
 import { profileService } from "@/services/profileService";
+import { chatService } from "@/services/chatService";
+import { generationService } from "@/services/generationService";
+import { activityService } from "@/services/activityService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, GraduationCap, Captions, ImageIcon, Film, Users, MessageCircle, Bookmark } from "lucide-react";
+import { MessageSquare, GraduationCap, Captions, ImageIcon, Film } from "lucide-react";
 
 const features = [
   {
@@ -40,6 +43,13 @@ const features = [
   },
 ];
 
+interface Activity {
+  id: string;
+  action: string;
+  feature: string;
+  created_at: string;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [stats, setStats] = useState({
@@ -48,6 +58,7 @@ export default function HomePage() {
     actionsLogged: 0,
     teamSize: 0,
   });
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,11 +73,34 @@ export default function HomePage() {
       return;
     }
 
-    // Fetch team size
-    const allProfiles = await profileService.getAllProfiles();
-    setStats(prev => ({ ...prev, teamSize: allProfiles.length }));
+    // Fetch all stats in parallel
+    const [conversations, savedItems, actionsLogged, allProfiles, activity] = await Promise.all([
+      chatService.getConversationCount(session.user.id),
+      generationService.getGenerationCount(session.user.id),
+      activityService.getActivityCount(session.user.id),
+      profileService.getAllProfiles(),
+      activityService.getUserActivity(session.user.id, 5),
+    ]);
 
+    setStats({
+      conversations,
+      savedItems,
+      actionsLogged,
+      teamSize: allProfiles.length,
+    });
+    setRecentActivity(activity);
     setLoading(false);
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return "Just now";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
   };
 
   if (loading) {
@@ -136,6 +170,30 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+
+        {/* Recent Activity Section */}
+        {recentActivity.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Recent Activity</h2>
+            <Card className="border-border">
+              <CardContent className="p-0">
+                <div className="divide-y divide-border">
+                  {recentActivity.map((activity) => (
+                    <div key={activity.id} className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-foreground font-medium">{activity.action}</p>
+                        <p className="text-sm text-muted-foreground">{activity.feature}</p>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {formatTimeAgo(activity.created_at)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

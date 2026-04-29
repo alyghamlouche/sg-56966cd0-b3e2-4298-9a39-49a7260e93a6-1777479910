@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
+import { generationService } from "@/services/generationService";
+import { activityService } from "@/services/activityService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,6 +93,25 @@ export default function MaktubPage() {
       if (data.results) {
         setSrtFiles(data.results);
         setStatus("Caption files ready!");
+        
+        // Save generation and log activity
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await generationService.saveGeneration(
+            session.user.id,
+            "Maktub.AI",
+            { 
+              fileName: audioFile.name, 
+              language: sourceLanguage, 
+              tracks: selectedTracks,
+              wordsPerCaption: wordsPerCaption[0],
+              detectSpeakers,
+              stripFillers
+            },
+            data.results
+          );
+          await activityService.logActivity(session.user.id, "Generated captions", "Maktub.AI");
+        }
       } else if (data.error) {
         setStatus(`Error: ${data.error}`);
       }

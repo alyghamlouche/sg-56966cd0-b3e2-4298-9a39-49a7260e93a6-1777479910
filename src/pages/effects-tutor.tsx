@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
+import { generationService } from "@/services/generationService";
+import { activityService } from "@/services/activityService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +55,18 @@ export default function EffectsTutorPage() {
 
       if (data.tutorial) {
         setTutorial(data.tutorial);
+        
+        // Save generation and log activity
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await generationService.saveGeneration(
+            session.user.id,
+            "Effects Tutor",
+            { effect, software, difficulty },
+            data.tutorial
+          );
+          await activityService.logActivity(session.user.id, "Generated tutorial", "Effects Tutor");
+        }
       }
     } catch (error) {
       console.error("Error generating tutorial:", error);

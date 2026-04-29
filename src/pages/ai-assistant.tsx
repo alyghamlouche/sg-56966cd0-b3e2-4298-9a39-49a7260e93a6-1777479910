@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import { chatService, type ChatMessage } from "@/services/chatService";
+import { activityService } from "@/services/activityService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +84,12 @@ export default function AIAssistantPage() {
         };
         setMessages((prev) => [...prev, assistantMsg]);
         await chatService.addMessage(sessionId, "assistant", data.reply);
+        
+        // Log activity
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await activityService.logActivity(session.user.id, "Sent message", "AI Assistant");
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);
