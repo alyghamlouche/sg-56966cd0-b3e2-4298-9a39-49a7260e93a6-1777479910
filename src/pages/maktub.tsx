@@ -308,28 +308,32 @@ export default function MaktubPage() {
         </Card>
 
         {Object.keys(srtFiles).length > 0 && (
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Caption Files Ready</CardTitle>
-              <CardDescription>Download your .srt files below</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(srtFiles).map(([trackName, content]) => (
-                <div key={trackName} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div>
-                    <p className="font-medium">{trackLabels[trackName as CaptionTrack]}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {content.split('\n\n').length - 1} captions
-                    </p>
+          <div className="space-y-6">
+            {Object.entries(srtFiles).map(([trackName, content]) => (
+              <Card key={trackName} className="border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">{trackLabels[trackName as CaptionTrack]}</CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    {content.split('\n\n').filter(block => block.trim()).length} captions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Caption Preview */}
+                  <div className="bg-secondary border border-border rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <pre className="text-sm text-foreground font-mono whitespace-pre-wrap leading-relaxed">
+                      {content}
+                    </pre>
                   </div>
-                  <Button onClick={() => handleDownload(trackName, content)} variant="outline">
+                  
+                  {/* Download Button */}
+                  <Button onClick={() => handleDownload(trackName, content)} variant="outline" className="w-full">
                     <Download className="w-4 h-4 mr-2" />
-                    Download
+                    Download {trackLabels[trackName as CaptionTrack]} SRT
                   </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
     </DashboardLayout>
