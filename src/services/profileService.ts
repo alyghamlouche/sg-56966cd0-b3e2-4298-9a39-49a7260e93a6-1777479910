@@ -33,14 +33,15 @@ export const profileService = {
     return data || [];
   },
 
-  async createUser(email: string, password: string, isAdmin: boolean = false): Promise<{ success: boolean; userId?: string; error?: string }> {
+  async createUser(email: string, password: string, fullName: string, isAdmin: boolean = false): Promise<{ success: boolean; userId?: string; error?: string }> {
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            is_admin: isAdmin
+            is_admin: isAdmin,
+            full_name: fullName
           }
         }
       });
@@ -50,7 +51,10 @@ export const profileService = {
       if (authData.user) {
         const { error: profileError } = await supabase
           .from("profiles")
-          .update({ is_admin: isAdmin })
+          .update({ 
+            is_admin: isAdmin,
+            full_name: fullName
+          })
           .eq("id", authData.user.id);
 
         if (profileError) throw profileError;
@@ -62,6 +66,23 @@ export const profileService = {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       console.error("Error creating user:", errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  async updateUserRole(userId: string, isAdmin: boolean): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_admin: isAdmin })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error updating user role:", errorMessage);
       return { success: false, error: errorMessage };
     }
   },
