@@ -103,13 +103,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields, files } = await parseForm(req);
     const audioFile = Array.isArray(files.audio) ? files.audio[0] : files.audio;
     const language = Array.isArray(fields.language) ? fields.language[0] : fields.language;
-    const tracks = Array.isArray(fields.tracks) ? fields.tracks : [fields.tracks];
+    const tracksField = fields.tracks;
+    const tracks = Array.isArray(tracksField) ? tracksField : [tracksField];
     const wordsPerCaption = parseInt(Array.isArray(fields.wordsPerCaption) ? fields.wordsPerCaption[0] : fields.wordsPerCaption || "6");
     const detectSpeakers = (Array.isArray(fields.detectSpeakers) ? fields.detectSpeakers[0] : fields.detectSpeakers) === "true";
     const stripFillers = (Array.isArray(fields.stripFillers) ? fields.stripFillers[0] : fields.stripFillers) === "true";
 
-    if (!audioFile || !tracks || tracks.length === 0) {
-      return res.status(400).json({ error: "Audio file and at least one caption track are required" });
+    console.log("Maktub API received:", { audioFile: !!audioFile, language, tracks, wordsPerCaption, detectSpeakers, stripFillers });
+
+    if (!audioFile) {
+      return res.status(400).json({ error: "Audio file is required" });
+    }
+
+    if (!tracks || tracks.length === 0 || !tracks[0]) {
+      return res.status(400).json({ error: "At least one caption track is required" });
     }
 
     const file = audioFile as FormidableFile;

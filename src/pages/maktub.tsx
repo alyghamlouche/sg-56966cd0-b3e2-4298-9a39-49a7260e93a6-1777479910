@@ -71,9 +71,10 @@ export default function MaktubPage() {
     try {
       const formData = new FormData();
       formData.append("audio", audioFile);
-      formData.append("projectTitle", projectTitle);
-      formData.append("sourceLanguage", sourceLanguage);
-      formData.append("tracks", JSON.stringify(selectedTracks));
+      formData.append("language", sourceLanguage);
+      selectedTracks.forEach(track => {
+        formData.append("tracks", track);
+      });
       formData.append("wordsPerCaption", wordsPerCaption[0].toString());
       formData.append("detectSpeakers", detectSpeakers.toString());
       formData.append("stripFillers", stripFillers.toString());
@@ -87,8 +88,8 @@ export default function MaktubPage() {
 
       const data = await response.json();
 
-      if (data.srtFiles) {
-        setSrtFiles(data.srtFiles);
+      if (data.results) {
+        setSrtFiles(data.results);
         setStatus("Caption files ready!");
       } else if (data.error) {
         setStatus(`Error: ${data.error}`);
