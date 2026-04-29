@@ -15,6 +15,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          feature: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          feature: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          feature?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -61,6 +85,33 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      generations: {
+        Row: {
+          created_at: string | null
+          feature_name: string
+          id: string
+          input: Json
+          output: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          feature_name: string
+          id?: string
+          input: Json
+          output: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          feature_name?: string
+          id?: string
+          input?: Json
+          output?: Json
           user_id?: string
         }
         Relationships: []
