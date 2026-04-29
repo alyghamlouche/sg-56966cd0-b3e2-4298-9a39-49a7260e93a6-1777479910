@@ -127,6 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     formData.append("file", blob, "audio.mp3");
     formData.append("model", "whisper-1");
     formData.append("response_format", "verbose_json");
+    formData.append("temperature", "0");
 
     if (language && language !== "auto") {
       formData.append("language", language);
@@ -147,12 +148,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const segments = whisperData.segments || [];
-    const transcriptText = whisperData.text;
+    
+    // Deduplicate consecutive repeated segments
+    const deduplicatedSegments = [];
+    let lastText = "";
+    
+    for (const segment of segments) {
+      const currentText = segment.text.trim();
+      // Only add if it's not a repeat of the previous segment
+      if (currentText !== lastText && currentText.length > 0) {
+        deduplicatedSegments.push(segment);
+        lastText = currentText;
+      }
+    }
+    
+    const transcriptText = deduplicatedSegments.map((s: any) => s.text).join(" ");
     const results: Record<string, string> = {};
 
     for (const track of tracks) {
       if (track === "fusha" || track === "dialect") {
-        results[track] = convertToSRT(segments, wordsPerCaption, detectSpeakers, stripFillers);
+        results[track] = convertToSRT(deduplicatedSegments, wordsPerCaption, detectSpeakers, stripFillers);
       } else if (track === "arabizi") {
         const arabiziPrompt = `Convert this Arabic text to Arabizi (Arabic written in Latin characters using common conventions: 3 for ع, 7 for ح, 2 for ء, 5 for خ, 9 for ق, etc.). Only output the Arabizi text, nothing else.\n\nArabic text: ${transcriptText}`;
 
