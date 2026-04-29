@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Copy, Check } from "lucide-react";
+import { Loader2, Copy, Check } from "lucide-react";
 
 export default function ImagePromptPage() {
   const router = useRouter();
@@ -82,17 +81,17 @@ export default function ImagePromptPage() {
     <DashboardLayout>
       <div className="container py-8 max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-display font-bold">Image Prompt Generator</h1>
-          <p className="text-muted-foreground">Create detailed prompts for AI image tools</p>
+          <h1 className="text-3xl font-semibold">Image Prompt Generator</h1>
+          <p className="text-muted-foreground mt-1">Create detailed prompts for AI image tools</p>
         </div>
 
-        <Card>
+        <Card className="border-border">
           <CardHeader>
             <CardTitle>Describe Your Image Concept</CardTitle>
             <CardDescription>Enter a basic idea and get a professional, detailed prompt</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleGenerate} className="space-y-4">
+            <form onSubmit={handleGenerate} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="concept">Image Concept</Label>
                 <Textarea
@@ -120,13 +119,13 @@ export default function ImagePromptPage() {
         </Card>
 
         {prompt && (
-          <Card>
+          <Card className="border-border">
             <CardHeader>
               <CardTitle>Your Professional Prompt</CardTitle>
               <CardDescription>Copy and use in Midjourney, DALL·E, or other AI image tools</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-muted p-4 rounded-md prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:font-semibold prose-p:leading-relaxed prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal prose-code:text-accent">
+              <div className="bg-muted p-4 rounded-md prose prose-apple max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {prompt}
                 </ReactMarkdown>
