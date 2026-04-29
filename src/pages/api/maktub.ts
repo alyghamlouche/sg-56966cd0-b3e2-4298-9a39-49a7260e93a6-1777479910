@@ -88,6 +88,39 @@ function formatTime(seconds: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
 }
 
+// Calculate text similarity using Levenshtein distance
+function calculateSimilarity(str1: string, str2: string): number {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  
+  if (len1 === 0 || len2 === 0) return 0;
+  
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= len1; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= len2; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+  
+  const distance = matrix[len1][len2];
+  const maxLen = Math.max(len1, len2);
+  return 1 - (distance / maxLen);
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -148,19 +181,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const segments = whisperData.segments || [];
+    const audioDuration = whisperData.duration || 0;
     
-    // Deduplicate consecutive repeated segments
+    console.log(`Audio duration: ${audioDuration}s, Raw segments: ${segments.length}`);
+    
+    // Step 1: Filter out segments that exceed the audio duration
+    const durationFilteredSegments = segments.filter((seg: any) => seg.start < audioDuration);
+    
+    console.log(`After duration filter: ${durationFilteredSegments.length} segments`);
+    
+    // Step 2: Deduplicate by text similarity (remove segments >80% similar to previous segments)
     const deduplicatedSegments = [];
-    let lastText = "";
+    const seenTexts: string[] = [];
     
-    for (const segment of segments) {
-      const currentText = segment.text.trim();
-      // Only add if it's not a repeat of the previous segment
-      if (currentText !== lastText && currentText.length > 0) {
+    for (const segment of durationFilteredSegments) {
+      const currentText = segment.text.trim().toLowerCase();
+      
+      if (currentText.length === 0) continue;
+      
+      // Check similarity against all previously seen texts
+      let isDuplicate = false;
+      
+      for (const seenText of seenTexts) {
+        const similarity = calculateSimilarity(currentText, seenText);
+        if (similarity > 0.8) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      
+      if (!isDuplicate) {
         deduplicatedSegments.push(segment);
-        lastText = currentText;
+        seenTexts.push(currentText);
       }
     }
+    
+    console.log(`After deduplication: ${deduplicatedSegments.length} segments`);
     
     const transcriptText = deduplicatedSegments.map((s: any) => s.text).join(" ");
     const results: Record<string, string> = {};
