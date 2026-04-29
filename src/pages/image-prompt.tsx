@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,8 +136,10 @@ export default function ImagePromptPage() {
               <CardDescription>Copy and use in Midjourney, DALL·E, or other AI image tools</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-muted p-4 rounded-md">
-                <p className="text-sm whitespace-pre-wrap">{prompt}</p>
+              <div className="bg-muted p-4 rounded-md prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:font-semibold prose-p:leading-relaxed prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal prose-code:text-accent">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {prompt}
+                </ReactMarkdown>
               </div>
               <Button onClick={handleCopy} variant="outline">
                 {copied ? (

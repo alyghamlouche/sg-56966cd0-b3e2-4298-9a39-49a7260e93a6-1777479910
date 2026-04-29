@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import { chatService, type ChatMessage } from "@/services/chatService";
 import { Button } from "@/components/ui/button";
@@ -139,7 +141,11 @@ export default function AIAssistantPage() {
                   ? "bg-primary text-primary-foreground" 
                   : "bg-card"
               }`}>
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                <div className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:leading-relaxed prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-code:text-accent prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
               </Card>
             </div>
           ))}

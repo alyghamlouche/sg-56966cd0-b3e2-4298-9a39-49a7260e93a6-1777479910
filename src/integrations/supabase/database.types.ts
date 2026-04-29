@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export type Json =
   | string
   | number
@@ -63,46 +63,29 @@ export type Database = {
           id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "chat_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
           id: string
           is_admin: boolean | null
-          password_hash: string | null
-          updated_at: string | null
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
           id: string
           is_admin?: boolean | null
-          password_hash?: string | null
-          updated_at?: string | null
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
-          password_hash?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,8 +156,10 @@ export default function EffectsTutorPage() {
               <CardTitle>Tutorial</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-invert max-w-none">
-                <pre className="whitespace-pre-wrap text-sm">{tutorial}</pre>
+              <div className="prose prose-invert max-w-none prose-headings:font-display prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:leading-relaxed prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-pre:p-4 prose-pre:rounded-md prose-code:text-accent prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal prose-li:my-1">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {tutorial}
+                </ReactMarkdown>
               </div>
             </CardContent>
           </Card>

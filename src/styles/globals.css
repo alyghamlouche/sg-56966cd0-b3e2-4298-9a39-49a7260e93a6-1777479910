@@ -48,4 +48,68 @@
   .container {
     @apply mx-auto px-4 md:px-6 lg:px-8 max-w-7xl w-full;
   }
+  
+  /* Custom markdown prose styles for dark theme */
+  .prose-invert {
+    @apply text-foreground;
+  }
+  
+  .prose-invert h1,
+  .prose-invert h2,
+  .prose-invert h3,
+  .prose-invert h4,
+  .prose-invert h5,
+  .prose-invert h6 {
+    @apply text-foreground;
+  }
+  
+  .prose-invert strong {
+    @apply text-foreground font-semibold;
+  }
+  
+  .prose-invert code {
+    @apply text-accent bg-secondary px-1.5 py-0.5 rounded text-sm;
+  }
+  
+  .prose-invert pre {
+    @apply bg-secondary border border-border rounded-md p-4 overflow-x-auto;
+  }
+  
+  .prose-invert pre code {
+    @apply bg-transparent p-0 text-foreground;
+  }
+  
+  .prose-invert a {
+    @apply text-primary hover:text-primary/80 underline;
+  }
+  
+  .prose-invert ul,
+  .prose-invert ol {
+    @apply my-4 pl-6;
+  }
+  
+  .prose-invert li {
+    @apply my-1;
+  }
+  
+  .prose-invert blockquote {
+    @apply border-l-4 border-primary pl-4 italic text-muted-foreground;
+  }
+  
+  .prose-invert hr {
+    @apply border-border my-6;
+  }
+  
+  .prose-invert table {
+    @apply w-full border-collapse my-4;
+  }
+  
+  .prose-invert th,
+  .prose-invert td {
+    @apply border border-border px-4 py-2;
+  }
+  
+  .prose-invert th {
+    @apply bg-secondary font-semibold;
+  }
 }
