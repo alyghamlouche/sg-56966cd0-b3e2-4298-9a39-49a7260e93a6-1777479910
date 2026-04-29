@@ -1,66 +1,157 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
+import { supabase } from "@/integrations/supabase/client";
+import { profileService } from "@/services/profileService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { MessageSquare, GraduationCap, Captions, ImageIcon } from "lucide-react";
+import { MessageSquare, GraduationCap, Captions, ImageIcon, Film, Users, MessageCircle, Bookmark } from "lucide-react";
 
 const features = [
   {
     name: "AI Assistant",
-    description: "AI-powered editing co-pilot for creative direction",
+    description: "AI-powered editing co-pilot",
     icon: MessageSquare,
     href: "/ai-assistant",
   },
   {
     name: "Effects Tutor",
-    description: "Step-by-step tutorials for Premiere Pro & After Effects",
+    description: "Step-by-step tutorials",
     icon: GraduationCap,
     href: "/effects-tutor",
   },
   {
     name: "Maktub.AI",
-    description: "Audio transcription and multilingual caption generator",
+    description: "Multilingual caption generator",
     icon: Captions,
     href: "/maktub",
   },
   {
-    name: "Image Prompt Generator",
-    description: "Generate detailed prompts for Midjourney & DALL·E",
+    name: "Image Prompt",
+    description: "Generate detailed prompts",
     icon: ImageIcon,
     href: "/image-prompt",
+  },
+  {
+    name: "Edit Breakdown",
+    description: "Analyze video editing styles",
+    icon: Film,
+    href: "/edit-breakdown",
   },
 ];
 
 export default function HomePage() {
+  const router = useRouter();
+  const [greeting, setGreeting] = useState("");
+  const [stats, setStats] = useState({
+    conversations: 0,
+    savedItems: 0,
+    actionsLogged: 0,
+    teamSize: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    initializeDashboard();
+  }, []);
+
+  const initializeDashboard = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+
+    // Set time-based greeting
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 18) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+
+    // Fetch team size
+    const allProfiles = await profileService.getAllProfiles();
+    setStats(prev => ({ ...prev, teamSize: allProfiles.length }));
+
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <DashboardLayout>
-      <div className="container py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-4xl font-display font-bold">Welcome to AG Edits</h2>
-            <p className="text-muted-foreground text-lg">Choose a tool to get started</p>
-          </div>
+      <div className="container py-8 space-y-8">
+        {/* Greeting */}
+        <div>
+          <h1 className="text-3xl font-semibold">{greeting}</h1>
+          <p className="text-muted-foreground mt-1">Welcome back to AG Edits</p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-muted-foreground">Total Conversations</CardDescription>
+              <CardTitle className="text-3xl font-semibold">{stats.conversations}</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-muted-foreground">Saved Items</CardDescription>
+              <CardTitle className="text-3xl font-semibold">{stats.savedItems}</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-muted-foreground">Actions Logged</CardDescription>
+              <CardTitle className="text-3xl font-semibold">{stats.actionsLogged}</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-muted-foreground">Team Size</CardDescription>
+              <CardTitle className="text-3xl font-semibold">{stats.teamSize}</CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Tools Section */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((feature) => (
               <Link key={feature.name} href={feature.href}>
-                <Card className="group hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 h-full cursor-pointer">
+                <Card className="border-border hover:border-foreground/20 transition-all h-full cursor-pointer group">
                   <CardHeader>
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                      <feature.icon className="w-6 h-6 text-primary" />
+                    <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-3 group-hover:bg-foreground/10 transition-colors">
+                      <feature.icon className="w-5 h-5" />
                     </div>
-                    <CardTitle className="font-display">{feature.name}</CardTitle>
-                    <CardDescription>{feature.description}</CardDescription>
+                    <CardTitle className="text-lg font-semibold">{feature.name}</CardTitle>
+                    <CardDescription className="text-muted-foreground">{feature.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" className="w-full group-hover:border-primary/50">
-                      Open Tool
-                    </Button>
-                  </CardContent>
                 </Card>
               </Link>
             ))}
           </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Recent Activity</h2>
+          <Card className="border-border">
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground text-center py-8">No recent activity</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </DashboardLayout>

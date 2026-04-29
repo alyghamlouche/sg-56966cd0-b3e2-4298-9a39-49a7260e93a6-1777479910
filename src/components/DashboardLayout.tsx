@@ -13,7 +13,8 @@ import {
   LogOut,
   Home,
   Menu,
-  X
+  X,
+  Film
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -33,27 +34,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
-    console.log("Session check:", { session: !!session, userId: session?.user?.id });
-    
     if (!session) {
       router.push("/login");
       return;
     }
 
     const profile = await profileService.getProfile(session.user.id);
-    console.log("Profile fetched in DashboardLayout:", { 
-      profile, 
-      hasProfile: !!profile,
-      isAdmin: profile?.is_admin,
-      email: profile?.email
-    });
     
     if (profile?.is_admin === true) {
-      console.log("Setting isAdmin to TRUE");
       setIsAdmin(true);
-    } else {
-      console.log("isAdmin remains FALSE, profile?.is_admin =", profile?.is_admin);
-      setIsAdmin(false);
     }
 
     setLoading(false);
@@ -70,6 +59,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Effects Tutor", icon: GraduationCap, href: "/effects-tutor" },
     { name: "Maktub.AI", icon: Captions, href: "/maktub" },
     { name: "Image Prompt", icon: ImageIcon, href: "/image-prompt" },
+    { name: "Edit Breakdown", icon: Film, href: "/edit-breakdown" },
   ];
 
   if (loading) {
@@ -102,7 +92,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-border">
-            <h1 className="text-2xl font-display font-bold text-primary">AG Edits</h1>
+            <h1 className="text-xl font-semibold">AG Edits</h1>
             <p className="text-sm text-muted-foreground mt-1">Creative Tools</p>
           </div>
 
@@ -113,44 +103,37 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               return (
                 <Link key={item.name} href={item.href}>
                   <div className={`
-                    flex items-center gap-3 px-3 py-2 rounded-md transition-colors cursor-pointer
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer
                     ${isActive 
                       ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-muted text-foreground"
+                      : "hover:bg-secondary text-foreground"
                     }
                   `}>
                     <item.icon className="w-5 h-5" />
-                    <span className="font-medium">{item.name}</span>
+                    <span className="font-medium text-sm">{item.name}</span>
                   </div>
                 </Link>
               );
             })}
 
-            {/* Admin Section */}
-            {(() => {
-              console.log("Rendering admin section check:", { isAdmin });
-              return isAdmin && (
-                <>
-                  <div className="pt-4 mt-4 border-t border-border">
-                    <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                      Administration
-                    </p>
-                    <Link href="/admin">
-                      <div className={`
-                        flex items-center gap-3 px-3 py-2 rounded-md transition-colors cursor-pointer
-                        ${router.pathname === "/admin"
-                          ? "bg-primary text-primary-foreground" 
-                          : "hover:bg-muted text-foreground"
-                        }
-                      `}>
-                        <Users className="w-5 h-5" />
-                        <span className="font-medium">Team Management</span>
-                      </div>
-                    </Link>
-                  </div>
-                </>
-              );
-            })()}
+            {isAdmin && (
+              <>
+                <div className="pt-4 mt-4 border-t border-border">
+                  <Link href="/team">
+                    <div className={`
+                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer
+                      ${router.pathname === "/team"
+                        ? "bg-primary text-primary-foreground" 
+                        : "hover:bg-secondary text-foreground"
+                      }
+                    `}>
+                      <Users className="w-5 h-5" />
+                      <span className="font-medium text-sm">Team</span>
+                    </div>
+                  </Link>
+                </div>
+              </>
+            )}
           </nav>
 
           {/* Footer */}
@@ -161,7 +144,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               onClick={handleLogout}
             >
               <LogOut className="w-5 h-5 mr-3" />
-              Logout
+              <span className="text-sm">Logout</span>
             </Button>
           </div>
         </div>

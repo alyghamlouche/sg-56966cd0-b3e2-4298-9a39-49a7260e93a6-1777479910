@@ -109,18 +109,18 @@ export default function AIAssistantPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col h-screen">
-        <header className="border-b border-border/50 p-4">
+        <header className="border-b border-border p-6">
           <div className="container">
-            <h1 className="text-2xl font-display font-bold">AI Assistant</h1>
-            <p className="text-muted-foreground">Your expert video editing co-pilot</p>
+            <h1 className="text-2xl font-semibold">AI Assistant</h1>
+            <p className="text-muted-foreground mt-1">Your expert video editing co-pilot</p>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4">
-          <div className="flex-1 space-y-4 overflow-y-auto mb-4">
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="container max-w-4xl mx-auto space-y-6">
             {messages.length === 0 && (
-              <div className="text-center py-12 space-y-2">
-                <h2 className="text-2xl font-display font-bold">AI Editing Co-Pilot</h2>
+              <div className="text-center py-16 space-y-3">
+                <h2 className="text-2xl font-semibold">AI Editing Co-Pilot</h2>
                 <p className="text-muted-foreground">Ask me about editing ideas, pacing, style, or creative direction</p>
               </div>
             )}
@@ -130,12 +130,12 @@ export default function AIAssistantPage() {
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <Card className={`max-w-[80%] p-4 ${
+                <Card className={`max-w-[85%] p-5 ${
                   msg.role === "user" 
                     ? "bg-primary text-primary-foreground" 
-                    : "bg-card"
+                    : "bg-card border-border"
                 }`}>
-                  <div className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:leading-relaxed prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-code:text-accent prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal">
+                  <div className="prose prose-apple prose-sm max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
@@ -146,7 +146,7 @@ export default function AIAssistantPage() {
 
             {sending && (
               <div className="flex justify-start">
-                <Card className="p-4 bg-card">
+                <Card className="p-5 bg-card border-border">
                   <Loader2 className="w-5 h-5 animate-spin" />
                 </Card>
               </div>
@@ -156,17 +156,22 @@ export default function AIAssistantPage() {
           </div>
         </main>
 
-        <form onSubmit={handleSend} className="border-t border-border/50 p-4">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about editing, pacing, style..."
-            disabled={sending}
-          />
-          <Button type="submit" disabled={sending || !input.trim()}>
-            <Send className="w-4 h-4" />
-          </Button>
-        </form>
+        <footer className="border-t border-border p-6">
+          <form onSubmit={handleSend} className="container max-w-4xl mx-auto">
+            <div className="flex gap-3">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about editing, pacing, style..."
+                disabled={sending}
+                className="flex-1"
+              />
+              <Button type="submit" disabled={sending || !input.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </form>
+        </footer>
       </div>
     </DashboardLayout>
   );

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function EffectsTutorPage() {
   const router = useRouter();
@@ -74,17 +74,17 @@ export default function EffectsTutorPage() {
     <DashboardLayout>
       <div className="container py-8 max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-display font-bold">Effects Tutor</h1>
-          <p className="text-muted-foreground">Learn Premiere Pro & After Effects techniques</p>
+          <h1 className="text-3xl font-semibold">Effects Tutor</h1>
+          <p className="text-muted-foreground mt-1">Learn Premiere Pro & After Effects techniques</p>
         </div>
 
-        <Card>
+        <Card className="border-border">
           <CardHeader>
             <CardTitle>What do you want to learn?</CardTitle>
             <CardDescription>Describe the effect and select your software</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleGenerate} className="space-y-4">
+            <form onSubmit={handleGenerate} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="effect">Effect Description</Label>
                 <Input
@@ -96,7 +96,7 @@ export default function EffectsTutorPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Software</Label>
                   <Select value={software} onValueChange={setSoftware} required>
@@ -140,12 +140,12 @@ export default function EffectsTutorPage() {
         </Card>
 
         {tutorial && (
-          <Card>
+          <Card className="border-border">
             <CardHeader>
               <CardTitle>Tutorial</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-invert max-w-none prose-headings:font-display prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:leading-relaxed prose-pre:bg-secondary prose-pre:border prose-pre:border-border prose-pre:p-4 prose-pre:rounded-md prose-code:text-accent prose-strong:text-foreground prose-ul:list-disc prose-ol:list-decimal prose-li:my-1">
+              <div className="prose prose-apple max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {tutorial}
                 </ReactMarkdown>
