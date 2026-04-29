@@ -133,9 +133,9 @@ export default function AIAssistantPage() {
                 <Card className={`max-w-[85%] p-5 ${
                   msg.role === "user" 
                     ? "bg-primary text-primary-foreground" 
-                    : "bg-card border-border"
+                    : "bg-card border-border text-foreground"
                 }`}>
-                  <div className="prose prose-apple prose-sm max-w-none">
+                  <div className="prose-apple prose prose-sm max-w-none text-foreground">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
@@ -146,8 +146,8 @@ export default function AIAssistantPage() {
 
             {sending && (
               <div className="flex justify-start">
-                <Card className="p-5 bg-card border-border">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                <Card className="p-5 bg-card border-border text-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin text-foreground" />
                 </Card>
               </div>
             )}

@@ -119,18 +119,18 @@ export default function ImagePromptPage() {
         </Card>
 
         {prompt && (
-          <Card className="border-border">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle>Your Professional Prompt</CardTitle>
-              <CardDescription>Copy and use in Midjourney, DALL·E, or other AI image tools</CardDescription>
+              <CardTitle className="text-foreground">Your Professional Prompt</CardTitle>
+              <CardDescription className="text-muted-foreground">Copy and use in Midjourney, DALL·E, or other AI image tools</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-muted p-4 rounded-md prose prose-apple max-w-none">
+              <div className="bg-secondary p-4 rounded-md prose-apple prose max-w-none text-foreground">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {prompt}
                 </ReactMarkdown>
               </div>
-              <Button onClick={handleCopy} variant="outline">
+              <Button onClick={handleCopy} variant="outline" className="text-foreground">
                 {copied ? (
                   <>
                     <Check className="w-4 h-4 mr-2" />

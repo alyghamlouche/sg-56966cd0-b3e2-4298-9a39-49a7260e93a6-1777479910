@@ -111,12 +111,12 @@ export default function EditBreakdownPage() {
         </Card>
 
         {breakdown && (
-          <Card className="border-border">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle>Breakdown Analysis</CardTitle>
+              <CardTitle className="text-foreground">Breakdown Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-apple max-w-none">
+              <div className="prose-apple prose max-w-none text-foreground">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {breakdown}
                 </ReactMarkdown>

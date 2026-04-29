@@ -112,4 +112,102 @@
   .prose-invert th {
     @apply bg-secondary font-semibold;
   }
+  
+  /* Apple-inspired markdown prose styles */
+  .prose-apple {
+    @apply text-foreground;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple h1,
+  .prose-apple h2,
+  .prose-apple h3,
+  .prose-apple h4,
+  .prose-apple h5,
+  .prose-apple h6 {
+    @apply text-foreground font-semibold;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple h1 {
+    @apply text-2xl mt-6 mb-4;
+  }
+  
+  .prose-apple h2 {
+    @apply text-xl mt-5 mb-3;
+  }
+  
+  .prose-apple h3 {
+    @apply text-lg mt-4 mb-2;
+  }
+  
+  .prose-apple strong {
+    @apply text-foreground font-semibold;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple code {
+    @apply bg-secondary px-1.5 py-0.5 rounded text-sm font-mono;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple pre {
+    @apply bg-secondary border border-border rounded-lg p-4 overflow-x-auto my-4;
+  }
+  
+  .prose-apple pre code {
+    @apply bg-transparent p-0;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple a {
+    @apply underline hover:text-muted-foreground;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple ul,
+  .prose-apple ol {
+    @apply my-4 pl-6 space-y-2;
+  }
+  
+  .prose-apple ul {
+    @apply list-disc;
+  }
+  
+  .prose-apple ol {
+    @apply list-decimal;
+  }
+  
+  .prose-apple li {
+    @apply my-1;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple blockquote {
+    @apply border-l-2 border-border pl-4 italic my-4;
+    color: hsl(var(--muted-foreground)) !important;
+  }
+  
+  .prose-apple hr {
+    @apply border-border my-6;
+  }
+  
+  .prose-apple table {
+    @apply w-full border-collapse my-4;
+  }
+  
+  .prose-apple th,
+  .prose-apple td {
+    @apply border border-border px-4 py-2 text-left;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .prose-apple th {
+    @apply bg-secondary font-semibold;
+  }
+  
+  .prose-apple p {
+    @apply my-3 leading-relaxed;
+    color: hsl(var(--foreground)) !important;
+  }
 }
