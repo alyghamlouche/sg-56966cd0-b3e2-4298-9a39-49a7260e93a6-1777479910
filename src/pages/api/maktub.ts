@@ -128,9 +128,15 @@ async function transcribeAudioChunk(audioBuffer: Buffer, apiKey: string, languag
   formData.append("response_format", "verbose_json");
   formData.append("temperature", "0");
 
-  if (language && language !== "auto") {
-    formData.append("language", language);
+  // Always use Arabic unless user explicitly selected English
+  if (language === "en") {
+    formData.append("language", "en");
+  } else {
+    formData.append("language", "ar");
   }
+
+  // Add Lebanese dialect prompt to prime Whisper for both MSA and Lebanese Arabic
+  formData.append("prompt", "يعني، هيدا، شو، كيفك، هلق، لأ، مش، هيك، تيجي، بدي، كتير، شوي، هون، متل، بس، لما، كمان، هيدي، نحنا، انتو");
 
   const whisperResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
@@ -330,7 +336,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             body: JSON.stringify({
               model: "gpt-4o",
               messages: [
-                { role: "system", content: "You are an expert Arabic-to-English translator." },
+                { role: "system", content: "You are a professional Arabic and Lebanese dialect to English translator for video captions. The speaker may mix Modern Standard Arabic and Lebanese dialect. Translate naturally and conversationally, never word-for-word literally. Keep translations short and punchy to fit caption format." },
                 { role: "user", content: translatePrompt },
               ],
               temperature: 0.3,
