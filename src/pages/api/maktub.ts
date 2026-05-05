@@ -2,10 +2,14 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import formidable, { File as FormidableFile } from "formidable";
 import fs from "fs";
 
+export const maxDuration = 60;
+
 export const config = {
   api: {
     bodyParser: false,
+    responseLimit: false,
   },
+  maxDuration: 60,
 };
 
 interface ParsedForm {
