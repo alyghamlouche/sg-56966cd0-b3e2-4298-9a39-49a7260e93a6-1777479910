@@ -120,6 +120,49 @@ function calculateSimilarity(str1: string, str2: string): number {
   return 1 - (distance / maxLen);
 }
 
+async function transcribeAudioChunk(audioBuffer: Buffer, apiKey: string, language: string): Promise<any> {
+  const formData = new FormData();
+  const blob = new Blob([audioBuffer], { type: "audio/mpeg" });
+  formData.append("file", blob, "audio.mp3");
+  formData.append("model", "whisper-1");
+  formData.append("response_format", "verbose_json");
+  formData.append("temperature", "0");
+
+  if (language && language !== "auto") {
+    formData.append("language", language);
+  }
+
+  const whisperResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: formData,
+  });
+
+  const whisperData = await whisperResponse.json();
+
+  if (!whisperResponse.ok) {
+    throw new Error(whisperData.error?.message || "Whisper API error");
+  }
+
+  return whisperData;
+}
+
+function splitAudioIntoChunks(audioBuffer: Buffer, chunkSizeBytes: number): Buffer[] {
+  const chunks: Buffer[] = [];
+  let offset = 0;
+
+  while (offset < audioBuffer.length) {
+    const chunkSize = Math.min(chunkSizeBytes, audioBuffer.length - offset);
+    const chunk = audioBuffer.slice(offset, offset + chunkSize);
+    chunks.push(chunk);
+    offset += chunkSize;
+  }
+
+  return chunks;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -153,41 +196,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const file = audioFile as FormidableFile;
     const audioBuffer = fs.readFileSync(file.filepath);
+    const fileSizeMB = audioBuffer.length / (1024 * 1024);
 
-    const formData = new FormData();
-    const blob = new Blob([audioBuffer], { type: "audio/mpeg" });
-    formData.append("file", blob, "audio.mp3");
-    formData.append("model", "whisper-1");
-    formData.append("response_format", "verbose_json");
-    formData.append("temperature", "0");
+    console.log(`Audio file size: ${fileSizeMB.toFixed(2)} MB`);
 
-    if (language && language !== "auto") {
-      formData.append("language", language);
+    // If file is larger than 20MB, split into chunks (roughly 10 minutes of audio at 128kbps = ~9MB)
+    const maxChunkSize = 20 * 1024 * 1024; // 20MB chunks
+    let allSegments: any[] = [];
+    let totalDuration = 0;
+
+    if (audioBuffer.length > maxChunkSize) {
+      console.log("Large file detected, splitting into chunks...");
+      const chunks = splitAudioIntoChunks(audioBuffer, maxChunkSize);
+      console.log(`Split into ${chunks.length} chunks`);
+
+      for (let i = 0; i < chunks.length; i++) {
+        console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
+        const whisperData = await transcribeAudioChunk(chunks[i], apiKey, language);
+        const chunkSegments = whisperData.segments || [];
+        const chunkDuration = whisperData.duration || 0;
+
+        // Adjust timestamps for all segments in this chunk
+        const adjustedSegments = chunkSegments.map((seg: any) => ({
+          ...seg,
+          start: seg.start + totalDuration,
+          end: seg.end + totalDuration,
+        }));
+
+        allSegments = allSegments.concat(adjustedSegments);
+        totalDuration += chunkDuration;
+      }
+    } else {
+      // Single pass for smaller files
+      const whisperData = await transcribeAudioChunk(audioBuffer, apiKey, language);
+      allSegments = whisperData.segments || [];
+      totalDuration = whisperData.duration || 0;
     }
 
-    const whisperResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: formData,
-    });
+    console.log(`Total audio duration: ${totalDuration}s, Total segments: ${allSegments.length}`);
 
-    const whisperData = await whisperResponse.json();
-
-    if (!whisperResponse.ok) {
-      throw new Error(whisperData.error?.message || "Whisper API error");
-    }
-
-    const segments = whisperData.segments || [];
-    const audioDuration = whisperData.duration || 0;
-    
-    console.log(`Audio duration: ${audioDuration}s, Raw segments: ${segments.length}`);
-    
-    const durationFilteredSegments = segments.filter((seg: any) => seg.start < audioDuration);
+    // Filter out segments that exceed the audio duration
+    const durationFilteredSegments = allSegments.filter((seg: any) => seg.start < totalDuration);
     
     console.log(`After duration filter: ${durationFilteredSegments.length} segments`);
     
+    // Deduplicate by text similarity
     const deduplicatedSegments = [];
     const seenTexts: string[] = [];
     
