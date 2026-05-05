@@ -34,9 +34,6 @@ function convertToSRT(segments: Array<{ start: number; end: number; text: string
 
   let srt = "";
   let captionIndex = 1;
-  let currentCaption = "";
-  let wordCount = 0;
-  let captionStart = 0;
   let speakerCount = 1;
 
   segments.forEach((segment) => {
@@ -50,29 +47,37 @@ function convertToSRT(segments: Array<{ start: number; end: number; text: string
       text = text.replace(/\s+/g, " ").trim();
     }
 
-    const words = text.split(" ");
+    const words = text.split(" ").filter(w => w.length > 0);
+    if (words.length === 0) return;
     
-    words.forEach((word, index) => {
-      if (wordCount === 0) {
-        captionStart = segment.start;
-      }
+    const segmentStart = segment.start;
+    const segmentEnd = segment.end;
+    const segmentDuration = segmentEnd - segmentStart;
+    
+    // Group words into chunks of wordsPerCaption size
+    const chunks: string[] = [];
+    for (let i = 0; i < words.length; i += wordsPerCaption) {
+      const chunk = words.slice(i, i + wordsPerCaption).join(" ");
+      chunks.push(chunk);
+    }
+    
+    const totalChunks = chunks.length;
+    
+    // Create SRT entry for each chunk with proportional timestamps
+    chunks.forEach((chunkText, chunkIndex) => {
+      const startTime = segmentStart + (chunkIndex / totalChunks) * segmentDuration;
+      const endTime = segmentStart + ((chunkIndex + 1) / totalChunks) * segmentDuration;
       
-      currentCaption += (wordCount > 0 ? " " : "") + word;
-      wordCount++;
-
-      if (wordCount >= wordsPerCaption || index === words.length - 1) {
-        const startTime = formatTime(captionStart);
-        const endTime = formatTime(segment.end);
-        const speakerTag = detectSpeakers ? `S${speakerCount}: ` : "";
-        srt += `${captionIndex}\n${startTime} --> ${endTime}\n${speakerTag}${currentCaption}\n\n`;
-        
-        captionIndex++;
-        currentCaption = "";
-        wordCount = 0;
-        
-        if (Math.random() > 0.7) {
-          speakerCount = speakerCount === 1 ? 2 : 1;
-        }
+      const startTimeFormatted = formatTime(startTime);
+      const endTimeFormatted = formatTime(endTime);
+      const speakerTag = detectSpeakers ? `S${speakerCount}: ` : "";
+      
+      srt += `${captionIndex}\n${startTimeFormatted} --> ${endTimeFormatted}\n${speakerTag}${chunkText}\n\n`;
+      
+      captionIndex++;
+      
+      if (detectSpeakers && Math.random() > 0.7) {
+        speakerCount = speakerCount === 1 ? 2 : 1;
       }
     });
   });
