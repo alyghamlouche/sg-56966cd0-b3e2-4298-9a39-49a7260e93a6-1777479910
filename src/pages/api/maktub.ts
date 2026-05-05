@@ -274,63 +274,89 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (track === "fusha" || track === "dialect") {
         results[track] = convertToSRT(deduplicatedSegments, wordsPerCaption, detectSpeakers, stripFillers);
       } else if (track === "arabizi") {
-        const arabiziPrompt = `Convert this Arabic text to Arabizi (Arabic written in Latin characters using common conventions: 3 for ع, 7 for ح, 2 for ء, 5 for خ, 9 for ق, etc.). Only output the Arabizi text, nothing else.\n\nArabic text: ${transcriptText}`;
+        const arabiziSegments = [];
+        
+        for (const segment of deduplicatedSegments) {
+          const arabiziPrompt = `Convert this Arabic text to Arabizi (Arabic written in Latin characters using common conventions: 3 for ع, 7 for ح, 2 for ء, 5 for خ, 9 for ق, etc.). Only output the Arabizi text, nothing else.\n\nArabic text: ${segment.text}`;
 
-        const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o",
-            messages: [
-              { role: "system", content: "You are an expert in Arabic-to-Arabizi transliteration." },
-              { role: "user", content: arabiziPrompt },
-            ],
-            temperature: 0.3,
-          }),
-        });
+          const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-4o",
+              messages: [
+                { role: "system", content: "You are an expert in Arabic-to-Arabizi transliteration." },
+                { role: "user", content: arabiziPrompt },
+              ],
+              temperature: 0.3,
+            }),
+          });
 
-        const gptData = await gptResponse.json();
+          const gptData = await gptResponse.json();
 
-        if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
-          const arabiziText = gptData.choices[0].message.content.trim();
-          const arabiziSegments = deduplicatedSegments.map((seg: { start: number; end: number }) => ({
-            ...seg,
-            text: arabiziText,
-          }));
-          results.arabizi = convertToSRT(arabiziSegments, wordsPerCaption, detectSpeakers, stripFillers);
+          if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
+            const arabiziText = gptData.choices[0].message.content.trim();
+            arabiziSegments.push({
+              start: segment.start,
+              end: segment.end,
+              text: arabiziText,
+            });
+          } else {
+            // Fallback to original text if translation fails
+            arabiziSegments.push({
+              start: segment.start,
+              end: segment.end,
+              text: segment.text,
+            });
+          }
         }
+        
+        results.arabizi = convertToSRT(arabiziSegments, wordsPerCaption, detectSpeakers, stripFillers);
       } else if (track === "english") {
-        const translatePrompt = `Translate this Arabic text to English. Preserve the meaning and tone. Only output the English translation, nothing else.\n\nArabic text: ${transcriptText}`;
+        const englishSegments = [];
+        
+        for (const segment of deduplicatedSegments) {
+          const translatePrompt = `Translate this Arabic text to English. Preserve the meaning and tone. Only output the English translation, nothing else.\n\nArabic text: ${segment.text}`;
 
-        const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o",
-            messages: [
-              { role: "system", content: "You are an expert Arabic-to-English translator." },
-              { role: "user", content: translatePrompt },
-            ],
-            temperature: 0.3,
-          }),
-        });
+          const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-4o",
+              messages: [
+                { role: "system", content: "You are an expert Arabic-to-English translator." },
+                { role: "user", content: translatePrompt },
+              ],
+              temperature: 0.3,
+            }),
+          });
 
-        const gptData = await gptResponse.json();
+          const gptData = await gptResponse.json();
 
-        if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
-          const englishText = gptData.choices[0].message.content.trim();
-          const englishSegments = deduplicatedSegments.map((seg: { start: number; end: number }) => ({
-            ...seg,
-            text: englishText,
-          }));
-          results.english = convertToSRT(englishSegments, wordsPerCaption, detectSpeakers, stripFillers);
+          if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
+            const englishText = gptData.choices[0].message.content.trim();
+            englishSegments.push({
+              start: segment.start,
+              end: segment.end,
+              text: englishText,
+            });
+          } else {
+            // Fallback to original text if translation fails
+            englishSegments.push({
+              start: segment.start,
+              end: segment.end,
+              text: segment.text,
+            });
+          }
         }
+        
+        results.english = convertToSRT(englishSegments, wordsPerCaption, detectSpeakers, stripFillers);
       }
     }
 
