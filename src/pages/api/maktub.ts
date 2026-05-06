@@ -1,13 +1,13 @@
+export const maxDuration = 60;
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import formidable, { File as FormidableFile } from "formidable";
 import fs from "fs";
 
-export const maxDuration = 60;
-
 export const config = {
   api: {
     bodyParser: false,
-    responseLimit: false,
+    responseLimit: '50mb',
   },
   maxDuration: 60,
 };
