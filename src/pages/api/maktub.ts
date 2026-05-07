@@ -331,47 +331,52 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         results.arabizi = convertToSRT(arabiziSegments, wordsPerCaption, detectSpeakers, stripFillers);
       } else if (track === "english") {
-        const englishSegments = [];
-        
-        for (const segment of deduplicatedSegments) {
-          const translatePrompt = `Translate this Arabic text to English. Preserve the meaning and tone. Only output the English translation, nothing else.\n\nArabic text: ${segment.text}`;
+        // Collect all segment texts into a numbered list
+        const numberedList = deduplicatedSegments
+          .map((seg, index) => `${index + 1}. ${seg.text}`)
+          .join('\n');
 
-          const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-              model: "gpt-4o",
-              messages: [
-                { role: "system", content: "You are a professional Arabic and Lebanese dialect to English translator for video captions. The speaker may mix Modern Standard Arabic and Lebanese dialect. Translate naturally and conversationally, never word-for-word literally. Keep translations short and punchy to fit caption format." },
-                { role: "user", content: translatePrompt },
-              ],
-              temperature: 0.3,
-            }),
-          });
+        const translatePrompt = `Translate every single line below from Arabic (Lebanese dialect or Modern Standard Arabic) to English. Every line must be translated, even if it appears to be in English already or in Arabic script. Never leave any line in Arabic. Return only the translated lines in the same numbered format (1. translated text\\n2. translated text), nothing else.\n\n${numberedList}`;
 
-          const gptData = await gptResponse.json();
+        const gptResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: "You are a professional Lebanese Arabic and Modern Standard Arabic to English translator for video captions. Every single line you receive must be translated to English, even if it is already in English or in Arabic script. Never leave any line in Arabic. Return only the translated lines in the same numbered format, nothing else." },
+              { role: "user", content: translatePrompt },
+            ],
+            temperature: 0.3,
+          }),
+        });
 
-          if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
-            const englishText = gptData.choices[0].message.content.trim();
-            englishSegments.push({
-              start: segment.start,
-              end: segment.end,
-              text: englishText,
-            });
-          } else {
-            // Fallback to original text if translation fails
-            englishSegments.push({
-              start: segment.start,
-              end: segment.end,
-              text: segment.text,
-            });
-          }
+        const gptData = await gptResponse.json();
+
+        if (gptResponse.ok && gptData.choices?.[0]?.message?.content) {
+          const translatedContent = gptData.choices[0].message.content.trim();
+          
+          // Parse the numbered list back into an array
+          const translatedLines = translatedContent
+            .split('\n')
+            .map(line => line.replace(/^\d+\.\s*/, '').trim())
+            .filter(line => line.length > 0);
+          
+          // Map translated lines back to segments with original timestamps
+          const englishSegments = deduplicatedSegments.map((segment, index) => ({
+            start: segment.start,
+            end: segment.end,
+            text: translatedLines[index] || segment.text, // Fallback to original if mapping fails
+          }));
+          
+          results.english = convertToSRT(englishSegments, wordsPerCaption, detectSpeakers, stripFillers);
+        } else {
+          // Fallback: use original segments if translation fails
+          results.english = convertToSRT(deduplicatedSegments, wordsPerCaption, detectSpeakers, stripFillers);
         }
-        
-        results.english = convertToSRT(englishSegments, wordsPerCaption, detectSpeakers, stripFillers);
       }
     }
 
