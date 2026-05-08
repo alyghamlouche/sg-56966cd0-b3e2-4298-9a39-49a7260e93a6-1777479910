@@ -32,7 +32,7 @@ export default function HomePage() {
 
     // Load user stats
     const generations = await generationService.getUserGenerations(session.user.id);
-    const activities = await activityService.getUserActivities(session.user.id);
+    const activities = await activityService.getUserActivity(session.user.id, 100);
 
     const total = generations.length;
     const weekAgo = new Date();
