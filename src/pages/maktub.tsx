@@ -184,35 +184,36 @@ export default function MaktubPage() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      <div className="p-8 max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-semibold">Maktub.AI</h1>
-          <p className="text-muted-foreground mt-1">Multilingual caption generator with advanced controls</p>
+          <h1 className="text-3xl font-display font-bold text-white">Maktub.AI</h1>
+          <p className="text-[#777] mt-1">Multilingual caption generator with advanced controls</p>
         </div>
 
-        <Card className="border-border">
+        <Card className="bg-card border-thin border-border rounded-xl">
           <CardHeader>
-            <CardTitle>Upload Audio & Configure</CardTitle>
-            <CardDescription>Upload MP3 or WAV (max 60MB) and select caption tracks</CardDescription>
+            <CardTitle className="text-white">Upload Audio & Configure</CardTitle>
+            <CardDescription className="text-[#777]">Upload MP3 or WAV (max 60MB) and select caption tracks</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleGenerate} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="projectTitle">Project Title</Label>
+                <Label htmlFor="projectTitle" className="text-[#ccc]">Project Title</Label>
                 <Input
                   id="projectTitle"
                   placeholder="My Video Project"
                   value={projectTitle}
                   onChange={(e) => setProjectTitle(e.target.value)}
+                  className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="audio">Audio File (MP3 or WAV)</Label>
+                <Label htmlFor="audio" className="text-[#ccc]">Audio File (MP3 or WAV)</Label>
                 <div className="flex items-center gap-2">
                   <label 
                     htmlFor="audio" 
-                    className="flex items-center gap-2 px-4 py-2 border border-input rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-input border-thin border-border rounded-xl cursor-pointer hover:bg-card text-[#ccc] hover:text-white transition-colors"
                   >
                     <Upload className="w-4 h-4" />
                     {audioFile ? audioFile.name : "Choose file"}
@@ -227,46 +228,48 @@ export default function MaktubPage() {
                   />
                 </div>
                 {audioFile && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-[#777]">
                     {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Source Language</Label>
+                <Label className="text-[#ccc]">Source Language</Label>
                 <Select value={sourceLanguage} onValueChange={setSourceLanguage}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-input border-thin border-border text-white rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">Auto-detect</SelectItem>
-                    <SelectItem value="ar">Arabic</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
+                  <SelectContent className="bg-card border-thin border-border">
+                    <SelectItem value="auto" className="text-white">Auto-detect</SelectItem>
+                    <SelectItem value="ar" className="text-white">Arabic</SelectItem>
+                    <SelectItem value="en" className="text-white">English</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-3">
-                <Label>Caption Tracks (select one or more)</Label>
+                <Label className="text-[#ccc]">Caption Tracks (select one or more)</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {(Object.keys(trackLabels) as CaptionTrack[]).map(track => (
                     <div
                       key={track}
                       onClick={() => toggleTrack(track)}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      className={`p-4 border-thin rounded-xl cursor-pointer transition-all ${
                         selectedTracks.includes(track)
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-muted-foreground"
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:border-[#444]"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded border ${
+                        <div className={`w-4 h-4 rounded border-thin ${
                           selectedTracks.includes(track)
                             ? "bg-primary border-primary"
-                            : "border-muted"
+                            : "border-[#444]"
                         }`} />
-                        <span className="font-medium">{trackLabels[track]}</span>
+                        <span className={`font-medium ${
+                          selectedTracks.includes(track) ? "text-primary" : "text-[#ccc]"
+                        }`}>{trackLabels[track]}</span>
                       </div>
                     </div>
                   ))}
@@ -275,8 +278,8 @@ export default function MaktubPage() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Words per Caption</Label>
-                  <span className="text-sm text-muted-foreground">{wordsPerCaption[0]} words</span>
+                  <Label className="text-[#ccc]">Words per Caption</Label>
+                  <span className="text-sm text-primary font-medium">{wordsPerCaption[0]} words</span>
                 </div>
                 <Slider
                   value={wordsPerCaption}
@@ -286,7 +289,7 @@ export default function MaktubPage() {
                   step={1}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-xs text-[#555]">
                   <span>Tight (2)</span>
                   <span>Balanced (6)</span>
                   <span>Loose (12)</span>
@@ -294,8 +297,8 @@ export default function MaktubPage() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <Label htmlFor="detectSpeakers" className="cursor-pointer">
+                <div className="flex items-center justify-between p-3 border-thin border-border bg-card rounded-xl">
+                  <Label htmlFor="detectSpeakers" className="cursor-pointer text-[#ccc]">
                     Detect Speakers (tag lines S1, S2...)
                   </Label>
                   <input
@@ -303,12 +306,12 @@ export default function MaktubPage() {
                     type="checkbox"
                     checked={detectSpeakers}
                     onChange={(e) => setDetectSpeakers(e.target.checked)}
-                    className="w-5 h-5 rounded border-input cursor-pointer"
+                    className="w-5 h-5 rounded border-thin border-border cursor-pointer accent-primary"
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <Label htmlFor="stripFillers" className="cursor-pointer">
+                <div className="flex items-center justify-between p-3 border-thin border-border bg-card rounded-xl">
+                  <Label htmlFor="stripFillers" className="cursor-pointer text-[#ccc]">
                     Strip filler words (يعني، um, uh, like...)
                   </Label>
                   <input
@@ -316,16 +319,20 @@ export default function MaktubPage() {
                     type="checkbox"
                     checked={stripFillers}
                     onChange={(e) => setStripFillers(e.target.checked)}
-                    className="w-5 h-5 rounded border-input cursor-pointer"
+                    className="w-5 h-5 rounded border-thin border-border cursor-pointer accent-primary"
                   />
                 </div>
               </div>
 
               {status && (
-                <p className="text-sm text-muted-foreground">{status}</p>
+                <p className="text-sm text-[#777]">{status}</p>
               )}
 
-              <Button type="submit" disabled={processing || !audioFile || selectedTracks.length === 0}>
+              <Button 
+                type="submit" 
+                disabled={processing || !audioFile || selectedTracks.length === 0}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl h-11"
+              >
                 {processing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -342,23 +349,27 @@ export default function MaktubPage() {
         {Object.keys(srtFiles).length > 0 && (
           <div className="space-y-6">
             {Object.entries(srtFiles).map(([trackName, content]) => (
-              <Card key={trackName} className="border-border">
+              <Card key={trackName} className="bg-card border-thin border-border rounded-xl">
                 <CardHeader>
-                  <CardTitle className="text-foreground">{trackLabels[trackName as CaptionTrack]}</CardTitle>
-                  <CardDescription className="text-muted-foreground">
+                  <CardTitle className="text-white">{trackLabels[trackName as CaptionTrack]}</CardTitle>
+                  <CardDescription className="text-[#777]">
                     {content.split('\n\n').filter(block => block.trim()).length} captions
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Caption Preview */}
-                  <div className="bg-secondary border border-border rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <pre className="text-sm text-foreground font-mono whitespace-pre-wrap leading-relaxed">
+                  <div className="bg-input border-thin border-border rounded-xl p-4 max-h-96 overflow-y-auto">
+                    <pre className="text-sm text-[#ccc] font-mono whitespace-pre-wrap leading-relaxed">
                       {content}
                     </pre>
                   </div>
                   
                   {/* Download Button */}
-                  <Button onClick={() => handleDownload(trackName, content)} variant="outline" className="w-full">
+                  <Button 
+                    onClick={() => handleDownload(trackName, content)} 
+                    variant="outline" 
+                    className="w-full border-thin border-border hover:bg-card hover:text-white rounded-xl"
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Download {trackLabels[trackName as CaptionTrack]} SRT
                   </Button>

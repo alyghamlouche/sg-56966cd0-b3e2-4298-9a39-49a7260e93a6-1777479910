@@ -1,167 +1,132 @@
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client";
-import { profileService } from "@/services/profileService";
 import { Button } from "@/components/ui/button";
 import { 
+  LayoutDashboard, 
   MessageSquare, 
-  GraduationCap, 
+  Sparkles, 
   Captions, 
-  ImageIcon, 
+  Image as ImageIcon,
   Users,
+  Settings,
   LogOut,
-  Home,
-  Menu,
-  X,
-  Film
+  Zap
 } from "lucide-react";
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    checkAuth();
+    getUserEmail();
   }, []);
 
-  const checkAuth = async () => {
+  const getUserEmail = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      router.push("/login");
-      return;
+    if (session) {
+      setUserEmail(session.user.email || null);
     }
-
-    const profile = await profileService.getProfile(session.user.id);
-    
-    if (profile?.is_admin === true) {
-      setIsAdmin(true);
-    }
-
-    setLoading(false);
   };
 
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
 
   const navItems = [
-    { name: "Dashboard", icon: Home, href: "/" },
-    { name: "AI Assistant", icon: MessageSquare, href: "/ai-assistant" },
-    { name: "Effects Tutor", icon: GraduationCap, href: "/effects-tutor" },
-    { name: "Maktub.AI", icon: Captions, href: "/maktub" },
-    { name: "Image Prompt", icon: ImageIcon, href: "/image-prompt" },
-    { name: "Edit Breakdown", icon: Film, href: "/edit-breakdown" },
+    { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/ai-assistant", icon: MessageSquare, label: "AI Assistant" },
+    { href: "/effects-tutor", icon: Sparkles, label: "Effects Tutor" },
+    { href: "/maktub", icon: Captions, label: "Maktub.AI" },
+    { href: "/image-prompt", icon: ImageIcon, label: "Image Prompt" },
+    { href: "/edit-breakdown", icon: Zap, label: "Edit Breakdown" },
   ];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return router.pathname === "/";
+    }
+    return router.pathname === href;
+  };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Mobile menu button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-50 md:hidden"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-      >
-        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </Button>
-
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border
-        transform transition-transform duration-200 ease-in-out
-        md:relative md:translate-x-0
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-6 border-b border-border">
-            <h1 className="text-xl font-semibold">AG Edits</h1>
-            <p className="text-sm text-muted-foreground mt-1">Creative Tools</p>
-          </div>
+      <aside className="w-64 bg-sidebar border-r border-thin border-border flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-thin border-border">
+          <h1 className="text-2xl font-display font-bold text-white">AG Edits</h1>
+          <p className="text-xs text-[#777] mt-1">Video Editing Tools</p>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navItems.map((item) => {
-              const isActive = router.pathname === item.href;
-              return (
-                <Link key={item.name} href={item.href}>
-                  <div className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer
-                    ${isActive 
-                      ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-secondary text-foreground"
-                    }
-                  `}>
-                    <item.icon className="w-5 h-5" />
-                    <span className="font-medium text-sm">{item.name}</span>
-                  </div>
-                </Link>
-              );
-            })}
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+            
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  active
+                    ? "bg-primary/10 text-primary border-thin border-primary/20"
+                    : "text-[#ccc] hover:bg-card hover:text-white"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-sm font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
-            {isAdmin && (
-              <>
-                <div className="pt-4 mt-4 border-t border-border">
-                  <Link href="/team">
-                    <div className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer
-                      ${router.pathname === "/team"
-                        ? "bg-primary text-primary-foreground" 
-                        : "hover:bg-secondary text-foreground"
-                      }
-                    `}>
-                      <Users className="w-5 h-5" />
-                      <span className="font-medium text-sm">Team</span>
-                    </div>
-                  </Link>
-                </div>
-              </>
-            )}
-          </nav>
+        {/* Bottom Section */}
+        <div className="p-4 border-t border-thin border-border space-y-1">
+          <Link
+            href="/team"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#ccc] hover:bg-card hover:text-white transition-all"
+          >
+            <Users className="w-5 h-5" />
+            <span className="text-sm font-medium">Team</span>
+          </Link>
+          
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#ccc] hover:bg-card hover:text-white transition-all"
+          >
+            <Settings className="w-5 h-5" />
+            <span className="text-sm font-medium">Settings</span>
+          </Link>
 
-          {/* Footer */}
-          <div className="p-4 border-t border-border">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start" 
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5 mr-3" />
-              <span className="text-sm">Logout</span>
-            </Button>
-          </div>
+          {userEmail && (
+            <div className="px-4 py-2 mt-3">
+              <p className="text-xs text-[#555] truncate">{userEmail}</p>
+            </div>
+          )}
+
+          <Button
+            onClick={handleSignOut}
+            variant="ghost"
+            className="w-full justify-start gap-3 px-4 py-3 text-[#ccc] hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="text-sm font-medium">Sign Out</span>
+          </Button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 md:ml-0">
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
         {children}
       </main>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }

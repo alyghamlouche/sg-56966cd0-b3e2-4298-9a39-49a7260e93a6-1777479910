@@ -2,70 +2,27 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client";
-import { profileService } from "@/services/profileService";
-import { chatService } from "@/services/chatService";
-import { generationService } from "@/services/generationService";
 import { activityService } from "@/services/activityService";
+import { generationService } from "@/services/generationService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, GraduationCap, Captions, ImageIcon, Film } from "lucide-react";
-
-const features = [
-  {
-    name: "AI Assistant",
-    description: "AI-powered editing co-pilot",
-    icon: MessageSquare,
-    href: "/ai-assistant",
-  },
-  {
-    name: "Effects Tutor",
-    description: "Step-by-step tutorials",
-    icon: GraduationCap,
-    href: "/effects-tutor",
-  },
-  {
-    name: "Maktub.AI",
-    description: "Multilingual caption generator",
-    icon: Captions,
-    href: "/maktub",
-  },
-  {
-    name: "Image Prompt",
-    description: "Generate detailed prompts",
-    icon: ImageIcon,
-    href: "/image-prompt",
-  },
-  {
-    name: "Edit Breakdown",
-    description: "Analyze video editing styles",
-    icon: Film,
-    href: "/edit-breakdown",
-  },
-];
-
-interface Activity {
-  id: string;
-  action: string;
-  feature: string;
-  created_at: string;
-}
+import { Button } from "@/components/ui/button";
+import { MessageSquare, Sparkles, Captions, Image as ImageIcon, TrendingUp, Clock, Zap, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-  const [stats, setStats] = useState({
-    conversations: 0,
-    savedItems: 0,
-    actionsLogged: 0,
-    teamSize: 0,
-  });
-  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalGenerations: 0,
+    thisWeek: 0,
+    mostUsed: "—",
+  });
 
   useEffect(() => {
-    initializeDashboard();
+    checkAuthAndLoadStats();
   }, []);
 
-  const initializeDashboard = async () => {
+  const checkAuthAndLoadStats = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -73,35 +30,68 @@ export default function HomePage() {
       return;
     }
 
-    // Fetch all stats in parallel
-    const [conversations, savedItems, actionsLogged, allProfiles, activity] = await Promise.all([
-      chatService.getConversationCount(session.user.id),
-      generationService.getGenerationCount(session.user.id),
-      activityService.getActivityCount(session.user.id),
-      profileService.getAllProfiles(),
-      activityService.getUserActivity(session.user.id, 5),
-    ]);
+    // Load user stats
+    const generations = await generationService.getUserGenerations(session.user.id);
+    const activities = await activityService.getUserActivities(session.user.id);
 
-    setStats({
-      conversations,
-      savedItems,
-      actionsLogged,
-      teamSize: allProfiles.length,
+    const total = generations.length;
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const thisWeek = activities.filter(a => new Date(a.created_at) > weekAgo).length;
+
+    // Find most used tool
+    const toolCounts: Record<string, number> = {};
+    activities.forEach(a => {
+      toolCounts[a.tool_name] = (toolCounts[a.tool_name] || 0) + 1;
     });
-    setRecentActivity(activity);
+    const mostUsed = Object.entries(toolCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
+
+    setStats({ totalGenerations: total, thisWeek, mostUsed });
     setLoading(false);
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  };
+  const tools = [
+    {
+      href: "/ai-assistant",
+      icon: MessageSquare,
+      iconBg: "bg-blue-500/10",
+      iconColor: "text-blue-500",
+      title: "AI Assistant",
+      description: "Chat with an expert video editing co-pilot",
+    },
+    {
+      href: "/effects-tutor",
+      icon: Sparkles,
+      iconBg: "bg-purple-500/10",
+      iconColor: "text-purple-500",
+      title: "Effects Tutor",
+      description: "Learn any effect with step-by-step tutorials",
+    },
+    {
+      href: "/maktub",
+      icon: Captions,
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+      title: "Maktub.AI",
+      description: "Multilingual caption generator with translation",
+    },
+    {
+      href: "/image-prompt",
+      icon: ImageIcon,
+      iconBg: "bg-pink-500/10",
+      iconColor: "text-pink-500",
+      title: "Image Prompt",
+      description: "Generate detailed prompts for AI image tools",
+    },
+    {
+      href: "/edit-breakdown",
+      icon: Zap,
+      iconBg: "bg-orange-500/10",
+      iconColor: "text-orange-500",
+      title: "Edit Breakdown",
+      description: "Analyze and break down video editing techniques",
+    },
+  ];
 
   if (loading) {
     return (
@@ -113,87 +103,81 @@ export default function HomePage() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8 space-y-8">
-        {/* Greeting */}
+      <div className="p-8 max-w-7xl mx-auto space-y-8">
+        {/* Header */}
         <div>
-          <h1 className="text-3xl font-semibold">Welcome back to AG Edits</h1>
-          <p className="text-muted-foreground mt-1">Your video editing toolkit</p>
+          <h1 className="text-4xl font-display font-bold text-white">Dashboard</h1>
+          <p className="text-[#777] mt-2">Welcome back to AG Edits</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Total Conversations</CardDescription>
-              <CardTitle className="text-3xl font-semibold">{stats.conversations}</CardTitle>
-            </CardHeader>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="bg-card border-thin border-border rounded-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <p className="text-xs uppercase tracking-wider text-[#777] font-medium">Total Generations</p>
+              </div>
+              <p className="text-4xl font-display font-bold text-white">{stats.totalGenerations}</p>
+            </CardContent>
           </Card>
 
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Saved Items</CardDescription>
-              <CardTitle className="text-3xl font-semibold">{stats.savedItems}</CardTitle>
-            </CardHeader>
+          <Card className="bg-card border-thin border-border rounded-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-blue-500" />
+                </div>
+                <p className="text-xs uppercase tracking-wider text-[#777] font-medium">This Week</p>
+              </div>
+              <p className="text-4xl font-display font-bold text-white">{stats.thisWeek}</p>
+            </CardContent>
           </Card>
 
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Actions Logged</CardDescription>
-              <CardTitle className="text-3xl font-semibold">{stats.actionsLogged}</CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Team Size</CardDescription>
-              <CardTitle className="text-3xl font-semibold">{stats.teamSize}</CardTitle>
-            </CardHeader>
+          <Card className="bg-card border-thin border-border rounded-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                </div>
+                <p className="text-xs uppercase tracking-wider text-[#777] font-medium">Most Used</p>
+              </div>
+              <p className="text-2xl font-display font-bold text-white truncate">{stats.mostUsed}</p>
+            </CardContent>
           </Card>
         </div>
 
         {/* Tools Section */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Tools</h2>
+        <div>
+          <h2 className="text-2xl font-display font-bold text-white mb-6">Your Tools</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((feature) => (
-              <Link key={feature.name} href={feature.href}>
-                <Card className="border-border hover:border-foreground/20 transition-all h-full cursor-pointer group">
-                  <CardHeader>
-                    <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-3 group-hover:bg-foreground/10 transition-colors">
-                      <feature.icon className="w-5 h-5" />
-                    </div>
-                    <CardTitle className="text-lg font-semibold">{feature.name}</CardTitle>
-                    <CardDescription className="text-muted-foreground">{feature.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              </Link>
-            ))}
+            {tools.map((tool) => {
+              const Icon = tool.icon;
+              
+              return (
+                <Link key={tool.href} href={tool.href}>
+                  <Card className="bg-card border-thin border-border rounded-xl hover:border-primary/50 transition-all group cursor-pointer h-full">
+                    <CardHeader className="pb-4">
+                      <div className={`w-14 h-14 rounded-xl ${tool.iconBg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-7 h-7 ${tool.iconColor}`} />
+                      </div>
+                      <CardTitle className="text-white group-hover:text-primary transition-colors">{tool.title}</CardTitle>
+                      <CardDescription className="text-[#777]">{tool.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button variant="ghost" className="w-full justify-between text-[#ccc] group-hover:text-primary group-hover:bg-primary/5">
+                        Open Tool
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
-
-        {/* Recent Activity Section */}
-        {recentActivity.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Recent Activity</h2>
-            <Card className="border-border">
-              <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="p-4 flex items-center justify-between">
-                      <div>
-                        <p className="text-foreground font-medium">{activity.action}</p>
-                        <p className="text-sm text-muted-foreground">{activity.feature}</p>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {formatTimeAgo(activity.created_at)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );
