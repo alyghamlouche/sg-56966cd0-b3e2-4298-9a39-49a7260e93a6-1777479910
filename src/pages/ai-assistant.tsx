@@ -155,12 +155,24 @@ export default function AIAssistantPage() {
         <footer className="border-t border-thin border-border p-6 bg-sidebar">
           <form onSubmit={handleSubmit} className="container max-w-4xl mx-auto">
             <div className="flex gap-3">
-              <Input
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onInput={(e) => {
+                  const element = e.target as HTMLTextAreaElement;
+                  element.style.height = 'auto';
+                  element.style.height = element.scrollHeight + 'px';
+                }}
                 placeholder="Ask about editing, pacing, style..."
                 disabled={processing}
-                className="flex-1 bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
+                className="flex-1 bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl px-4 py-3"
+                style={{
+                  resize: 'none',
+                  overflowY: 'auto',
+                  minHeight: '44px',
+                  maxHeight: '200px',
+                  width: '100%'
+                }}
               />
               <Button type="submit" disabled={processing || !input.trim()} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
                 <Send className="w-4 h-4" />
