@@ -79,8 +79,9 @@ export default function AIAssistantPage() {
         setChatHistory(prev => [...prev, { role: "assistant", content: data.response }]);
         
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          await chatService.saveMessage(session.user.id, userMessage, data.response);
+        if (session && sessionId) {
+          await chatService.addMessage(sessionId, 'user', userMessage);
+          await chatService.addMessage(sessionId, 'assistant', data.response);
         }
       } else if (data.error) {
         setChatHistory(prev => [...prev, { role: "assistant", content: `Error: ${data.error}` }]);
@@ -120,9 +121,9 @@ export default function AIAssistantPage() {
               </div>
             )}
 
-            {messages.map((msg) => (
+            {messages.map((msg, index) => (
               <div
-                key={msg.id}
+                key={index}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <Card className={`max-w-[85%] p-5 ${
