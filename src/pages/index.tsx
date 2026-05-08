@@ -42,7 +42,7 @@ export default function HomePage() {
     // Find most used tool
     const toolCounts: Record<string, number> = {};
     activities.forEach(a => {
-      toolCounts[a.tool_name] = (toolCounts[a.tool_name] || 0) + 1;
+      toolCounts[a.feature] = (toolCounts[a.feature] || 0) + 1;
     });
     const mostUsed = Object.entries(toolCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
 
