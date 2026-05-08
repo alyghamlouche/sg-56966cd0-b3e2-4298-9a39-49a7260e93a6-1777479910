@@ -174,7 +174,7 @@ export default function AIAssistantPage() {
                   width: '100%'
                 }}
               />
-              <Button type="submit" disabled={processing || !input.trim()} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+              <Button type="submit" disabled={processing || !input.trim()} className="bg-[#d4f55c] hover:bg-[#deff6e] text-[#0a0a0a] font-medium rounded-[10px] transition-all hover:scale-[1.02]">
                 <Send className="w-4 h-4" />
               </Button>
             </div>

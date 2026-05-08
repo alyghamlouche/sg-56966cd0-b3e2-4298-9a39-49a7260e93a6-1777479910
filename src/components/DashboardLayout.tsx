@@ -69,20 +69,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.href);
+            const isActive = router.pathname === item.href;
             
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  active
-                    ? "bg-primary/10 text-primary border-thin border-primary/20"
-                    : "text-[#ccc] hover:bg-card hover:text-white"
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{item.label}</span>
+              <Link key={item.href} href={item.href}>
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${
+                  isActive 
+                    ? "bg-[#d4f55c14] text-[#d4f55c] border-[0.5px] border-[#d4f55c33]" 
+                    : "text-[#777] hover:bg-[#d4f55c11] hover:text-[#d4f55c]"
+                }`}>
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </div>
               </Link>
             );
           })}

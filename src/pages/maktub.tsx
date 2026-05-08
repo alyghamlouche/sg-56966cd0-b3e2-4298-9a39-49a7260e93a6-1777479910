@@ -287,7 +287,7 @@ export default function MaktubPage() {
                   min={2}
                   max={12}
                   step={1}
-                  className="w-full"
+                  className="w-full [&_[role=slider]]:bg-[#d4f55c] [&_[role=slider]]:border-[#d4f55c] [&_.bg-primary]:bg-[#d4f55c]"
                 />
                 <div className="flex justify-between text-xs text-[#555]">
                   <span>Tight (2)</span>
@@ -306,7 +306,8 @@ export default function MaktubPage() {
                     type="checkbox"
                     checked={detectSpeakers}
                     onChange={(e) => setDetectSpeakers(e.target.checked)}
-                    className="w-5 h-5 rounded border-thin border-border cursor-pointer accent-primary"
+                    className="w-5 h-5 rounded border-thin border-border cursor-pointer checked:bg-[#d4f55c] checked:border-[#d4f55c]"
+                    style={{ accentColor: '#d4f55c' }}
                   />
                 </div>
 
@@ -319,7 +320,8 @@ export default function MaktubPage() {
                     type="checkbox"
                     checked={stripFillers}
                     onChange={(e) => setStripFillers(e.target.checked)}
-                    className="w-5 h-5 rounded border-thin border-border cursor-pointer accent-primary"
+                    className="w-5 h-5 rounded border-thin border-border cursor-pointer checked:bg-[#d4f55c] checked:border-[#d4f55c]"
+                    style={{ accentColor: '#d4f55c' }}
                   />
                 </div>
               </div>
@@ -331,7 +333,7 @@ export default function MaktubPage() {
               <Button 
                 type="submit" 
                 disabled={processing || !audioFile || selectedTracks.length === 0}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl h-11"
+                className="w-full bg-[#d4f55c] hover:bg-[#deff6e] text-[#0a0a0a] font-medium rounded-[10px] h-11 transition-all hover:scale-[1.02]"
               >
                 {processing ? (
                   <>

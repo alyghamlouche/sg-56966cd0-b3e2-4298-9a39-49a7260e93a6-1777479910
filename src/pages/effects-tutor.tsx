@@ -143,7 +143,7 @@ export default function EffectsTutorPage() {
               <Button 
                 type="submit" 
                 disabled={generating || !effect.trim()}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl h-11"
+                className="w-full bg-[#d4f55c] hover:bg-[#deff6e] text-[#0a0a0a] font-medium rounded-[10px] h-11 transition-all hover:scale-[1.02]"
               >
                 {generating ? (
                   <>

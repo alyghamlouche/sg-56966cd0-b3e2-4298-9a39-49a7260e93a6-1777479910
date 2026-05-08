@@ -158,7 +158,7 @@ export default function HomePage() {
               
               return (
                 <Link key={tool.href} href={tool.href}>
-                  <Card className="bg-card border-thin border-border rounded-xl hover:border-primary/50 transition-all group cursor-pointer h-full">
+                  <Card className="bg-card border-thin border-border rounded-xl hover:border-[#d4f55c22] transition-all group cursor-pointer h-full">
                     <CardHeader className="pb-4">
                       <div className={`w-14 h-14 rounded-xl ${tool.iconBg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                         <Icon className={`w-7 h-7 ${tool.iconColor}`} />
