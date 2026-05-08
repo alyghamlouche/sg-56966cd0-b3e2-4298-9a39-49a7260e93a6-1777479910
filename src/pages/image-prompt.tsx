@@ -137,7 +137,7 @@ export default function ImagePromptPage() {
           </CardContent>
         </Card>
 
-        {prompt && (
+        {generatedPrompt && (
           <Card className="bg-card border-thin border-border rounded-xl">
             <CardHeader>
               <CardTitle className="text-white">Generated Prompt</CardTitle>
@@ -145,7 +145,7 @@ export default function ImagePromptPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-input border-thin border-border rounded-xl p-4">
-                <p className="text-[#ccc] leading-relaxed whitespace-pre-wrap">{prompt}</p>
+                <p className="text-[#ccc] leading-relaxed whitespace-pre-wrap">{generatedPrompt}</p>
               </div>
               <Button 
                 onClick={handleCopy}
