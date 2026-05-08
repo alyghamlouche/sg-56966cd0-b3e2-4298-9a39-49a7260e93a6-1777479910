@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2, UserPlus, ShieldCheck, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Trash2, UserPlus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminPage() {
@@ -17,12 +17,12 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [updatingRoles, setUpdatingRoles] = useState<Set<string>>(new Set());
+  const [showAddUser, setShowAddUser] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -60,12 +60,13 @@ export default function AdminPage() {
     if (result.success) {
       toast({
         title: "User created",
-        description: `${fullName} (${email}) has been added successfully.`,
+        description: `${fullName || email} has been added successfully.`,
       });
       setFullName("");
       setEmail("");
       setPassword("");
       setIsAdmin(false);
+      setShowAddUser(false);
       await loadUsers();
     } else {
       toast({
@@ -76,33 +77,6 @@ export default function AdminPage() {
     }
 
     setCreating(false);
-  };
-
-  const handleToggleRole = async (userId: string, currentIsAdmin: boolean, userName: string) => {
-    setUpdatingRoles(prev => new Set(prev).add(userId));
-    
-    const newRole = !currentIsAdmin;
-    const result = await profileService.updateUserRole(userId, newRole);
-    
-    if (result.success) {
-      toast({
-        title: "Role updated",
-        description: `${userName} is now ${newRole ? "an Admin" : "an Editor"}.`,
-      });
-      await loadUsers();
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to update role",
-        variant: "destructive",
-      });
-    }
-
-    setUpdatingRoles(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(userId);
-      return newSet;
-    });
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
@@ -154,7 +128,7 @@ export default function AdminPage() {
               <CardDescription className="text-[#777]">Create a new user account</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddUser} className="space-y-4">
+              <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-[#ccc]">Email</Label>
@@ -162,8 +136,8 @@ export default function AdminPage() {
                       id="email"
                       type="email"
                       placeholder="user@example.com"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
                       required
                     />
@@ -174,8 +148,8 @@ export default function AdminPage() {
                       id="password"
                       type="password"
                       placeholder="••••••••"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
                       required
                     />
@@ -187,14 +161,14 @@ export default function AdminPage() {
                     <Input
                       id="full_name"
                       placeholder="John Doe"
-                      value={newUser.full_name}
-                      onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
                       className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role" className="text-[#ccc]">Role</Label>
-                    <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
+                    <Select value={isAdmin ? "admin" : "editor"} onValueChange={(value) => setIsAdmin(value === "admin")}>
                       <SelectTrigger className="bg-input border-thin border-border text-white rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
@@ -205,9 +179,8 @@ export default function AdminPage() {
                     </Select>
                   </div>
                 </div>
-                {error && <p className="text-destructive text-sm">{error}</p>}
-                <Button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
-                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                <Button type="submit" disabled={creating} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+                  {creating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Create User
                 </Button>
               </form>
@@ -239,9 +212,9 @@ export default function AdminPage() {
                       <TableCell className="text-[#ccc]">{user.full_name || "—"}</TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.role === "admin" ? "bg-primary/10 text-primary" : "bg-input text-[#ccc]"
+                          user.is_admin ? "bg-primary/10 text-primary" : "bg-input text-[#ccc]"
                         }`}>
-                          {user.role}
+                          {user.is_admin ? "Admin" : "Editor"}
                         </span>
                       </TableCell>
                       <TableCell className="text-[#777]">
@@ -251,8 +224,7 @@ export default function AdminPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          disabled={loading}
+                          onClick={() => handleDeleteUser(user.id, user.full_name || user.email || "Unknown")}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg"
                         >
                           <Trash2 className="w-4 h-4" />
