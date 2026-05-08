@@ -86,64 +86,69 @@ export default function EffectsTutorPage() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      <div className="p-8 max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-semibold">Effects Tutor</h1>
-          <p className="text-muted-foreground mt-1">Learn Premiere Pro & After Effects techniques</p>
+          <h1 className="text-3xl font-display font-bold text-white">Effects Tutor</h1>
+          <p className="text-[#777] mt-1">Learn any effect with step-by-step tutorials</p>
         </div>
 
-        <Card className="border-border">
+        <Card className="bg-card border-thin border-border rounded-xl">
           <CardHeader>
-            <CardTitle>What do you want to learn?</CardTitle>
-            <CardDescription>Describe the effect and select your software</CardDescription>
+            <CardTitle className="text-white">What do you want to learn?</CardTitle>
+            <CardDescription className="text-[#777]">Describe the effect, select your software and difficulty</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleGenerate} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="effect">Effect Description</Label>
+                <Label htmlFor="effect" className="text-[#ccc]">Effect Description</Label>
                 <Input
                   id="effect"
-                  placeholder="e.g., cinematic color grading, smooth zoom transition"
+                  placeholder="e.g. smooth zoom transition, glitch effect, color grading..."
                   value={effect}
                   onChange={(e) => setEffect(e.target.value)}
+                  className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Software</Label>
-                  <Select value={software} onValueChange={setSoftware} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select software" />
+                  <Label className="text-[#ccc]">Software</Label>
+                  <Select value={software} onValueChange={setSoftware}>
+                    <SelectTrigger className="bg-input border-thin border-border text-white rounded-xl">
+                      <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="premiere">Adobe Premiere Pro</SelectItem>
-                      <SelectItem value="aftereffects">After Effects</SelectItem>
+                    <SelectContent className="bg-card border-thin border-border">
+                      <SelectItem value="premiere" className="text-white">Adobe Premiere Pro</SelectItem>
+                      <SelectItem value="aftereffects" className="text-white">After Effects</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Difficulty Level</Label>
-                  <Select value={difficulty} onValueChange={setDifficulty} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
+                  <Label className="text-[#ccc]">Difficulty Level</Label>
+                  <Select value={difficulty} onValueChange={setDifficulty}>
+                    <SelectTrigger className="bg-input border-thin border-border text-white rounded-xl">
+                      <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
+                    <SelectContent className="bg-card border-thin border-border">
+                      <SelectItem value="beginner" className="text-white">Beginner</SelectItem>
+                      <SelectItem value="intermediate" className="text-white">Intermediate</SelectItem>
+                      <SelectItem value="advanced" className="text-white">Advanced</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              <Button type="submit" disabled={generating}>
+              <Button 
+                type="submit" 
+                disabled={generating || !effect.trim()}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl h-11"
+              >
                 {generating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
+                    Generating Tutorial...
                   </>
                 ) : (
                   "Generate Tutorial"
@@ -154,12 +159,13 @@ export default function EffectsTutorPage() {
         </Card>
 
         {tutorial && (
-          <Card className="border-border bg-card">
+          <Card className="bg-card border-thin border-border rounded-xl">
             <CardHeader>
-              <CardTitle className="text-foreground">Tutorial</CardTitle>
+              <CardTitle className="text-white">Tutorial</CardTitle>
+              <CardDescription className="text-[#777]">{effect} in {software === "premiere" ? "Premiere Pro" : "After Effects"}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="prose-apple prose max-w-none text-foreground">
+              <div className="prose prose-sm max-w-none text-[#ccc] prose-headings:text-white prose-strong:text-white prose-li:text-[#ccc]">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {tutorial}
                 </ReactMarkdown>

@@ -105,19 +105,19 @@ export default function AIAssistantPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col h-screen">
-        <header className="border-b border-border p-6">
+        <header className="border-b border-thin border-border p-6 bg-sidebar">
           <div className="container">
-            <h1 className="text-2xl font-semibold">AI Assistant</h1>
-            <p className="text-muted-foreground mt-1">Your expert video editing co-pilot</p>
+            <h1 className="text-2xl font-display font-semibold text-white">AI Assistant</h1>
+            <p className="text-[#777] mt-1">Your expert video editing co-pilot</p>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-background">
           <div className="container max-w-4xl mx-auto space-y-6">
             {messages.length === 0 && (
               <div className="text-center py-16 space-y-3">
-                <h2 className="text-2xl font-semibold">AI Editing Co-Pilot</h2>
-                <p className="text-muted-foreground">Ask me about editing ideas, pacing, style, or creative direction</p>
+                <h2 className="text-2xl font-display font-semibold text-white">AI Editing Co-Pilot</h2>
+                <p className="text-[#777]">Ask me about editing ideas, pacing, style, or creative direction</p>
               </div>
             )}
 
@@ -126,12 +126,12 @@ export default function AIAssistantPage() {
                 key={index}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <Card className={`max-w-[85%] p-5 ${
+                <Card className={`max-w-[85%] p-5 rounded-xl ${
                   msg.role === "user" 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-card border-border text-foreground"
+                    ? "bg-primary text-primary-foreground border-primary" 
+                    : "bg-card border-thin border-border text-white"
                 }`}>
-                  <div className="prose-apple prose prose-sm max-w-none text-foreground">
+                  <div className="prose-apple prose prose-sm max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
@@ -142,8 +142,8 @@ export default function AIAssistantPage() {
 
             {processing && (
               <div className="flex justify-start">
-                <Card className="p-5 bg-card border-border text-foreground">
-                  <Loader2 className="w-5 h-5 animate-spin text-foreground" />
+                <Card className="p-5 bg-card border-thin border-border rounded-xl">
+                  <Loader2 className="w-5 h-5 animate-spin text-white" />
                 </Card>
               </div>
             )}
@@ -152,7 +152,7 @@ export default function AIAssistantPage() {
           </div>
         </main>
 
-        <footer className="border-t border-border p-6">
+        <footer className="border-t border-thin border-border p-6 bg-sidebar">
           <form onSubmit={handleSubmit} className="container max-w-4xl mx-auto">
             <div className="flex gap-3">
               <Input
@@ -160,9 +160,9 @@ export default function AIAssistantPage() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about editing, pacing, style..."
                 disabled={processing}
-                className="flex-1"
+                className="flex-1 bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
               />
-              <Button type="submit" disabled={processing || !input.trim()}>
+              <Button type="submit" disabled={processing || !input.trim()} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
                 <Send className="w-4 h-4" />
               </Button>
             </div>

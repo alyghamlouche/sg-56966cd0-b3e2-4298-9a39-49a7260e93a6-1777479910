@@ -85,39 +85,44 @@ export default function EditBreakdownPage() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      <div className="p-8 max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-semibold">Edit Breakdown</h1>
-          <p className="text-muted-foreground mt-1">Analyze video editing styles</p>
+          <h1 className="text-3xl font-display font-bold text-white">Edit Breakdown</h1>
+          <p className="text-[#777] mt-1">Analyze and break down video editing techniques</p>
         </div>
 
-        <Card className="border-border">
+        <Card className="bg-card border-thin border-border rounded-xl">
           <CardHeader>
-            <CardTitle>Analyze an Instagram Video</CardTitle>
-            <CardDescription>Paste an Instagram video URL to get a detailed editing breakdown</CardDescription>
+            <CardTitle className="text-white">Describe the edit</CardTitle>
+            <CardDescription className="text-[#777]">Paste a video URL or describe the editing style you want analyzed</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAnalyze} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="videoUrl">Instagram Video URL</Label>
-                <Input
-                  id="videoUrl"
-                  type="url"
-                  placeholder="https://www.instagram.com/reel/..."
+                <Label htmlFor="editInput" className="text-[#ccc]">Video URL or Edit Description</Label>
+                <Textarea
+                  id="editInput"
+                  placeholder="e.g. YouTube URL, describe a music video edit, commercial pacing..."
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
+                  rows={4}
+                  className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl resize-none"
                   required
                 />
               </div>
 
-              <Button type="submit" disabled={analyzing}>
+              <Button 
+                type="submit" 
+                disabled={analyzing || !videoUrl.trim()}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl h-11"
+              >
                 {analyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing...
+                    Analyzing Edit...
                   </>
                 ) : (
-                  "Analyze Video"
+                  "Analyze Edit"
                 )}
               </Button>
             </form>
@@ -125,12 +130,13 @@ export default function EditBreakdownPage() {
         </Card>
 
         {breakdown && (
-          <Card className="border-border bg-card">
+          <Card className="bg-card border-thin border-border rounded-xl">
             <CardHeader>
-              <CardTitle className="text-foreground">Breakdown Analysis</CardTitle>
+              <CardTitle className="text-white">Edit Breakdown</CardTitle>
+              <CardDescription className="text-[#777]">Analysis of techniques and structure</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="prose-apple prose max-w-none text-foreground">
+              <div className="prose prose-sm max-w-none text-[#ccc] prose-headings:text-white prose-strong:text-white prose-li:text-[#ccc]">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {breakdown}
                 </ReactMarkdown>

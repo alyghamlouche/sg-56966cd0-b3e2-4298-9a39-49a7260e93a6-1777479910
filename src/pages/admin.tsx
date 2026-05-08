@@ -135,147 +135,134 @@ export default function AdminPage() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8 space-y-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Team Management</h1>
-          <p className="text-muted-foreground">Manage users and access control</p>
+      <div className="p-8 max-w-6xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-white">Admin Panel</h1>
+            <p className="text-[#777] mt-1">Manage users and system settings</p>
+          </div>
+          <Button onClick={() => setShowAddUser(!showAddUser)} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Add User
+          </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5" />
-              Create New User
-            </CardTitle>
-            <CardDescription>Add a new editor or admin to AG Edits</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="John Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
+        {showAddUser && (
+          <Card className="bg-card border-thin border-border rounded-xl">
+            <CardHeader>
+              <CardTitle className="text-white">Add New User</CardTitle>
+              <CardDescription className="text-[#777]">Create a new user account</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAddUser} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-[#ccc]">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="user@example.com"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                      className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-[#ccc]">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="editor@agedits.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name" className="text-[#ccc]">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      placeholder="John Doe"
+                      value={newUser.full_name}
+                      onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
+                      className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role" className="text-[#ccc]">Role</Label>
+                    <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
+                      <SelectTrigger className="bg-input border-thin border-border text-white rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-thin border-border">
+                        <SelectItem value="editor" className="text-white">Editor</SelectItem>
+                        <SelectItem value="admin" className="text-white">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Minimum 6 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isAdmin"
-                  checked={isAdmin}
-                  onChange={(e) => setIsAdmin(e.target.checked)}
-                  className="w-4 h-4 rounded border-input"
-                />
-                <Label htmlFor="isAdmin" className="cursor-pointer">
-                  Grant admin access (can manage users)
-                </Label>
-              </div>
-              <Button type="submit" disabled={creating}>
-                {creating ? "Creating..." : "Create User"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                {error && <p className="text-destructive text-sm">{error}</p>}
+                <Button type="submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Create User
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
+        <Card className="bg-card border-thin border-border rounded-xl">
           <CardHeader>
-            <CardTitle>Team Members ({users.length})</CardTitle>
-            <CardDescription>View and manage user roles</CardDescription>
+            <CardTitle className="text-white">User Management</CardTitle>
+            <CardDescription className="text-[#777]">{users.length} total users</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {user.full_name || "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {user.email}
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={user.is_admin ? "default" : "secondary"}
-                        className="cursor-pointer"
-                        onClick={() => handleToggleRole(
-                          user.id, 
-                          user.is_admin || false, 
-                          user.full_name || user.email || "user"
-                        )}
-                      >
-                        {user.is_admin ? (
-                          <>
-                            <ShieldCheck className="w-3 h-3 mr-1" />
-                            Admin
-                          </>
-                        ) : (
-                          <>
-                            <User className="w-3 h-3 mr-1" />
-                            Editor
-                          </>
-                        )}
-                      </Badge>
-                      {updatingRoles.has(user.id) && (
-                        <span className="text-xs text-muted-foreground ml-2">Updating...</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteUser(
-                          user.id, 
-                          user.full_name || user.email || "user"
-                        )}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="text-[#ccc]">Email</TableHead>
+                    <TableHead className="text-[#ccc]">Full Name</TableHead>
+                    <TableHead className="text-[#ccc]">Role</TableHead>
+                    <TableHead className="text-[#ccc]">Created</TableHead>
+                    <TableHead className="text-[#ccc] text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user.id} className="border-b border-border hover:bg-input/50">
+                      <TableCell className="text-white">{user.email}</TableCell>
+                      <TableCell className="text-[#ccc]">{user.full_name || "—"}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.role === "admin" ? "bg-primary/10 text-primary" : "bg-input text-[#ccc]"
+                        }`}>
+                          {user.role}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-[#777]">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={loading}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

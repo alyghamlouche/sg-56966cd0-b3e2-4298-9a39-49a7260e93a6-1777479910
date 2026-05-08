@@ -93,36 +93,41 @@ export default function ImagePromptPage() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      <div className="p-8 max-w-4xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-semibold">Image Prompt Generator</h1>
-          <p className="text-muted-foreground mt-1">Create detailed prompts for AI image tools</p>
+          <h1 className="text-3xl font-display font-bold text-white">Image Prompt Generator</h1>
+          <p className="text-[#777] mt-1">Generate detailed prompts for Midjourney, DALL·E, and more</p>
         </div>
 
-        <Card className="border-border">
+        <Card className="bg-card border-thin border-border rounded-xl">
           <CardHeader>
-            <CardTitle>Describe Your Image Concept</CardTitle>
-            <CardDescription>Enter a basic idea and get a professional, detailed prompt</CardDescription>
+            <CardTitle className="text-white">Describe your image</CardTitle>
+            <CardDescription className="text-[#777]">Brief description of the image you want to create</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleGenerate} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="concept">Image Concept</Label>
+                <Label htmlFor="concept" className="text-[#ccc]">Image Concept</Label>
                 <Textarea
                   id="concept"
-                  placeholder="e.g., futuristic cityscape at sunset, minimalist product photography, abstract watercolor portrait"
+                  placeholder="e.g. a futuristic cityscape at sunset, cinematic lighting..."
                   value={concept}
                   onChange={(e) => setConcept(e.target.value)}
                   rows={4}
+                  className="bg-input border-thin border-border text-white placeholder:text-[#555] rounded-xl resize-none"
                   required
                 />
               </div>
 
-              <Button type="submit" disabled={generating}>
+              <Button 
+                type="submit" 
+                disabled={generating || !concept.trim()}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl h-11"
+              >
                 {generating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
+                    Generating Prompt...
                   </>
                 ) : (
                   "Generate Detailed Prompt"
@@ -133,29 +138,22 @@ export default function ImagePromptPage() {
         </Card>
 
         {prompt && (
-          <Card className="border-border bg-card">
+          <Card className="bg-card border-thin border-border rounded-xl">
             <CardHeader>
-              <CardTitle className="text-foreground">Your Professional Prompt</CardTitle>
-              <CardDescription className="text-muted-foreground">Copy and use in Midjourney, DALL·E, or other AI image tools</CardDescription>
+              <CardTitle className="text-white">Generated Prompt</CardTitle>
+              <CardDescription className="text-[#777]">Copy and use in your AI image tool</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-secondary p-4 rounded-md prose-apple prose max-w-none text-foreground">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {prompt}
-                </ReactMarkdown>
+              <div className="bg-input border-thin border-border rounded-xl p-4">
+                <p className="text-[#ccc] leading-relaxed whitespace-pre-wrap">{prompt}</p>
               </div>
-              <Button onClick={handleCopy} variant="outline" className="text-foreground">
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Prompt
-                  </>
-                )}
+              <Button 
+                onClick={handleCopy}
+                variant="outline"
+                className="w-full border-thin border-border hover:bg-card hover:text-white rounded-xl"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                {copied ? "Copied!" : "Copy Prompt"}
               </Button>
             </CardContent>
           </Card>
