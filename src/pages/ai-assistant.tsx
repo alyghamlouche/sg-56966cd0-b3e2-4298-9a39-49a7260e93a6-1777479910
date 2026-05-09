@@ -23,7 +23,6 @@ export default function AIAssistantPage() {
     const [sessionId, setSessionId] = useState < string | null > (null);
     const messagesEndRef = useRef < HTMLDivElement > (null);
 
-    // Prompt builder state
     const [showPromptBuilder, setShowPromptBuilder] = useState(false);
     const [contentType, setContentType] = useState("Instagram Reel");
     const [videoAbout, setVideoAbout] = useState("");
@@ -40,17 +39,12 @@ export default function AIAssistantPage() {
 
     const checkAuthAndInitSession = async () => {
         const { data: { session } } = await supabase.auth.getSession();
-
         if (!session) {
             router.push("/login");
             return;
         }
-
         const newSessionId = await chatService.createSession(session.user.id);
-        if (newSessionId) {
-            setSessionId(newSessionId);
-        }
-
+        if (newSessionId) setSessionId(newSessionId);
         setLoading(false);
     };
 
@@ -83,7 +77,6 @@ export default function AIAssistantPage() {
                 const assistantMessage = { role: 'assistant' as const, content: data.response };
                 setMessages(prev => [...prev, assistantMessage]);
                 setChatHistory(prev => [...prev, { role: "assistant", content: data.response }]);
-
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session && sessionId) {
                     await chatService.addMessage(sessionId, 'user', userMessage);
@@ -102,25 +95,15 @@ export default function AIAssistantPage() {
 
     const buildPrompt = () => {
         const parts = [];
-
         if (contentType && videoAbout) {
             parts.push(`I am editing a ${contentType} about ${videoAbout}.`);
         } else if (contentType) {
             parts.push(`I am editing a ${contentType}.`);
         }
-
-        if (problemType) {
-            parts.push(`My problem is ${problemType}.`);
-        }
-
-        if (extraContext) {
-            parts.push(`Additional context: ${extraContext}.`);
-        }
-
+        if (problemType) parts.push(`My problem is ${problemType}.`);
+        if (extraContext) parts.push(`Additional context: ${extraContext}.`);
         parts.push("Please give me specific, actionable advice tailored to Premiere Pro and short-form social content.");
-
-        const builtPrompt = parts.join(" ");
-        setInput(builtPrompt);
+        setInput(parts.join(" "));
         setShowPromptBuilder(false);
     };
 
@@ -152,17 +135,20 @@ export default function AIAssistantPage() {
                         )}
 
                         {messages.map((msg, index) => (
-                            <div
-                                key={index}
-                                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                            >
+                            <div key={index} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                                 {msg.role === "user" ? (
-                                    <Card
-                                        style={{ background: "#1e1e1e", border: "0.5px solid #333" }}
-                                        className="max-w-[85%] p-5 rounded-xl"
+                                    <div
+                                        style={{
+                                            background: "#d4f55c",
+                                            borderRadius: "12px",
+                                            padding: "16px 20px",
+                                            maxWidth: "85%",
+                                        }}
                                     >
-                                        <p style={{ color: "#ffffff", fontWeight: 400, margin: 0 }}>{msg.content}</p>
-                                    </Card>
+                                        <p style={{ color: "#0a0a0a", fontWeight: 500, margin: 0, lineHeight: 1.6, fontSize: "14px" }}>
+                                            {msg.content}
+                                        </p>
+                                    </div>
                                 ) : (
                                     <Card className="max-w-[85%] p-5 rounded-xl bg-card border-thin border-border">
                                         <div className="prose prose-sm max-w-none prose-invert prose-headings:text-white prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-[#ccc] prose-p:leading-relaxed prose-strong:text-white prose-strong:font-semibold prose-ul:text-[#ccc] prose-ol:text-[#ccc] prose-li:text-[#ccc] prose-li:my-1 prose-code:bg-[#1a1a1a] prose-code:text-[#d4f55c] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-[#1a1a1a] prose-pre:border prose-pre:border-[#2a2a2a] prose-hr:border-[#2a2a2a]">
@@ -215,7 +201,6 @@ export default function AIAssistantPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-
                                         <div className="space-y-2">
                                             <Label className="text-[#ccc] text-sm">What is the video about?</Label>
                                             <Input
@@ -286,7 +271,11 @@ export default function AIAssistantPage() {
                                         width: '100%'
                                     }}
                                 />
-                                <Button type="submit" disabled={processing || !input.trim()} className="bg-[#d4f55c] hover:bg-[#deff6e] text-[#0a0a0a] font-medium rounded-[10px] transition-all hover:scale-[1.02]">
+                                <Button
+                                    type="submit"
+                                    disabled={processing || !input.trim()}
+                                    className="bg-[#d4f55c] hover:bg-[#deff6e] text-[#0a0a0a] font-medium rounded-[10px] transition-all hover:scale-[1.02]"
+                                >
                                     <Send className="w-4 h-4" />
                                 </Button>
                             </div>
