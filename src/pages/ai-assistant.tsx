@@ -156,20 +156,22 @@ export default function AIAssistantPage() {
                                 key={index}
                                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                             >
-                                <Card className={`max-w-[85%] p-5 rounded-xl ${msg.role === "user"
-                                        ? "bg-primary text-[#ffffff] border-primary"
-                                        : "bg-card border-thin border-border text-white"
-                                    }`}>
-                                    <div className={`prose prose-sm max-w-none prose-invert ${
-                                      msg.role === "user" 
-                                        ? "text-[#ffffff] prose-p:text-[#ffffff] prose-headings:text-[#ffffff] prose-strong:text-[#ffffff] prose-li:text-[#ffffff] prose-code:text-[#ffffff] prose-code:bg-black/10" 
-                                        : "prose-headings:text-white prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-[#ccc] prose-p:leading-relaxed prose-strong:text-white prose-strong:font-semibold prose-ul:text-[#ccc] prose-ol:text-[#ccc] prose-li:text-[#ccc] prose-li:my-1 prose-code:bg-[#1a1a1a] prose-code:text-[#d4f55c] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-[#1a1a1a] prose-pre:border prose-pre:border-[#2a2a2a] prose-hr:border-[#2a2a2a]"
-                                    }`}>
-                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                            {msg.content}
-                                        </ReactMarkdown>
-                                    </div>
-                                </Card>
+                                {msg.role === "user" ? (
+                                    <Card
+                                        style={{ background: "#1e1e1e", border: "0.5px solid #333" }}
+                                        className="max-w-[85%] p-5 rounded-xl"
+                                    >
+                                        <p style={{ color: "#ffffff", fontWeight: 400, margin: 0 }}>{msg.content}</p>
+                                    </Card>
+                                ) : (
+                                    <Card className="max-w-[85%] p-5 rounded-xl bg-card border-thin border-border">
+                                        <div className="prose prose-sm max-w-none prose-invert prose-headings:text-white prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-[#ccc] prose-p:leading-relaxed prose-strong:text-white prose-strong:font-semibold prose-ul:text-[#ccc] prose-ol:text-[#ccc] prose-li:text-[#ccc] prose-li:my-1 prose-code:bg-[#1a1a1a] prose-code:text-[#d4f55c] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-[#1a1a1a] prose-pre:border prose-pre:border-[#2a2a2a] prose-hr:border-[#2a2a2a]">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                {msg.content}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </Card>
+                                )}
                             </div>
                         ))}
 
@@ -187,7 +189,6 @@ export default function AIAssistantPage() {
 
                 <footer className="border-t border-thin border-border p-6 bg-sidebar">
                     <div className="container max-w-4xl mx-auto space-y-4">
-                        {/* Prompt Builder Toggle */}
                         <Button
                             onClick={() => setShowPromptBuilder(!showPromptBuilder)}
                             variant="outline"
@@ -196,7 +197,6 @@ export default function AIAssistantPage() {
                             {showPromptBuilder ? "Hide" : "Build your prompt"}
                         </Button>
 
-                        {/* Prompt Builder Panel */}
                         {showPromptBuilder && (
                             <Card className="bg-card border-thin border-border rounded-xl p-4">
                                 <div className="space-y-4">
@@ -265,7 +265,6 @@ export default function AIAssistantPage() {
                             </Card>
                         )}
 
-                        {/* Chat Input */}
                         <form onSubmit={handleSubmit}>
                             <div className="flex gap-3">
                                 <textarea
