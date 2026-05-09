@@ -37,7 +37,13 @@ export const authService = {
   // Get current user
   async getCurrentUser(): Promise<AuthUser | null> {
     const { data: { session } } = await supabase.auth.getSession();
-    return session?.user || null;
+    if (!session?.user) return null;
+    return {
+      id: session.user.id,
+      email: session.user.email || "",
+      user_metadata: session.user.user_metadata,
+      created_at: session.user.created_at
+    };
   },
 
   // Get current session
