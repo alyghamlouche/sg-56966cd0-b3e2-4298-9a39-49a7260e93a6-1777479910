@@ -30,7 +30,7 @@ export default function HomePage() {
       return;
     }
 
-    // Load user stats
+    // Load user stats (profile data fetched lazily only when displaying stats)
     const generations = await generationService.getUserGenerations(session.user.id);
     const activities = await activityService.getUserActivity(session.user.id, 100);
 
